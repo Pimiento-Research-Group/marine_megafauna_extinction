@@ -16,6 +16,7 @@ dat_raw <- list.files(path = here("data",
 
 # data processing ---------------------------------------------------------
 
+# some simple cleaning steps
 dat_clean <- dat_raw %>% 
   drop_na(Max_size_m) %>% 
   filter(Max_size_m >= 1) %>% 
@@ -31,36 +32,47 @@ tax_names <- dat_clean %>%
 
 # get pbdb data -----------------------------------------------------------
 
-# set up function
-get_pbdb_url <- function(taxon){
-  params <- paste(
-    # select group
-    paste("base_name=",taxon, sep = ""),
-    # only return occurrences identified to at least genus
-    # level and lump multiple occurrences from same collection into a single occurrence
-    # "idreso=lump_genus",
-    # only return extinct genera
-    "extant=no",
-    # classext=taxonomic information, with taxon numbers;
-    # ident=individual components of the taxonomic identification
-    "show=classext,ident",
-    sep="&")
+# # set up function
+# get_pbdb_url <- function(taxon){
+#   params <- paste(
+#     # select group
+#     paste("base_name=",taxon, sep = ""),
+#     # only return occurrences identified to at least genus
+#     # level and lump multiple occurrences from same collection into a single occurrence
+#     # "idreso=lump_genus",
+#     # only return extinct genera
+#     "extant=no",
+#     # classext=taxonomic information, with taxon numbers;
+#     # ident=individual components of the taxonomic identification
+#     "show=classext,ident",
+#     sep="&")
+# 
+#   # get url
+#   uri <- paste("https://paleobiodb.org/data1.2/occs/list.tsv?", params, sep="")
+# 
+#   uri
+# }
+# 
+# # get urls, adding "%20" instead of white space in the species names
+# # resolves the API problem
+# url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20"))
+# 
+# # download data on genus level
+# pbdb_data_raw <- map(url_list, ~read_tsv(file = .x, 
+#                                      quote = "", 
+#                                      show_col_types = FALSE))
+# 
+# # save download
+# write_rds(pbdb_data_raw, here("data",
+#                               "output",
+#                               "pbdb_data_raw.rds"))
 
-  # get url
-  uri <- paste("https://paleobiodb.org/data1.2/occs/list.tsv?", params, sep="")
+# read in download
+pbdb_data_raw <- read_rds(here("data",
+                               "output",
+                               "pbdb_data_raw.rds"))
 
-  uri
-}
-
-# get urls, adding "%20" instead of white space in the species names
-# resolves the API problem
-url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20"))
-
-# download data on genus level
-pbdb_data_raw <- map(url_list, ~read_tsv(file = .x, 
-                                     quote = "", 
-                                     show_col_types = FALSE))
-
+ 
 # remove those where no entries where found, based on length of returned entries
 pbdb_data <- pbdb_data_raw[map(pbdb_data_raw, ncol) > 2]
 
