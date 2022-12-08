@@ -140,28 +140,121 @@ pbdbd_names <- pbdb_data %>%
   unlist() 
   
 # add the synonyms 
-pbdbd_names <- c(pbdbd_names, pull(synon_names, 
+pbdbd_names <- c(pbdbd_names, pull(synon_names,
                                    identified_name_clean))
 
 
 
 # compare occurrences -----------------------------------------------------
 
+
 # calculate how many megafauna taxa have occurrences if we do it on genus level
 # genus level
-word(tax_names, 1)[word(tax_names, 1) %in% word(pbdbd_names, 1)] %>% 
+genus_level <- word(tax_names, 1)[word(tax_names, 1) %in% word(pbdbd_names, 1)] %>% 
   length() # 346 genera have at least one occurrence in pbdb
 
 # what's the percentage
-word(tax_names, 1)[word(tax_names, 1) %in% word(pbdbd_names, 1)] %>% 
-  length() / length(tax_names) # approximately 75%
+genus_level/ length(tax_names) # approximately 76% / length(tax_names) # approximately 75%
+
+
+# how many genus only, i.e. removing those taxa that could be resolved to species level
+genus_level_only <- tax_names[str_count(tax_names, "\\S+")==1][tax_names[str_count(tax_names, "\\S+")==1] %in% pbdbd_names] %>% 
+  length() # 60 genera
+
+# percentag for genus only
+genus_level_only / length(tax_names[str_count(tax_names, "\\S+")==1]) # approximately 59 percent
 
 
 # same for species level
-tax_names[str_count(tax_names, "\\S+")==2][tax_names[str_count(tax_names, "\\S+")==2] %in% pbdbd_names] %>% 
+species_level <- tax_names[str_count(tax_names, "\\S+")==2][tax_names[str_count(tax_names, "\\S+")==2] %in% pbdbd_names] %>% 
   length() # 217 species have at least one occurrence in pbdb
 
-tax_names[str_count(tax_names, "\\S+")==2][tax_names[str_count(tax_names, "\\S+")==2] %in% pbdbd_names] %>% 
-  length() / length(tax_names[str_count(tax_names, "\\S+")==2]) # approximately 60%
+# percentage
+species_level / length(tax_names[str_count(tax_names, "\\S+")==2]) # approximately 62%
 
 
+
+# merge dataset -----------------------------------------------------------
+
+
+# make sure that datasets have same column types for merging 
+dat_pbdb <- pbdb_data %>% 
+  map(~ .x %>% 
+        mutate(family_no = as.numeric(family_no), 
+               order_no = as.numeric(order_no), 
+               class_no = as.numeric(class_no), 
+               genus = as.character(genus), 
+               primary_reso = as.character(primary_reso), 
+               subgenus_name = as.character(subgenus_name), 
+               species_reso = as.character(species_reso), 
+               subgenus_reso = as.character(subgenus_reso))) %>% 
+  # create one dataframe from the list of pbdb occurrences
+  bind_rows()
+
+
+
+# occurrences per taxon ---------------------------------------------------
+
+
+# calculate occurrences of the accepted names for species 
+# first, identify all synonyms of the taxa in the database, and assign the 
+# accepted name to these
+tax_names_clean <- tax_names %>% 
+  as_tibble_col(column_name = "taxon") %>% 
+  mutate(identified_name_clean = if_else(taxon %in% synon_names$identified_name_clean, 
+                               taxon, NA_character_)) %>% 
+  left_join(synon_names) %>% 
+  mutate(taxon_clean = if_else(is.na(accepted_name_clean), 
+                               taxon, 
+                               accepted_name_clean)) %>% 
+  pull(taxon_clean)
+
+# calculate the 
+nr_occ <- map_int(tax_names_clean,
+        ~ filter(dat_pbdb,
+                 accepted_name_clean == .x) %>%
+          nrow())  
+
+dat_occ <- tibble(taxon = tax_names_clean,
+                  occurrences = nr_occ) 
+
+# how many species have more than one occurrence
+dat_occ %>% 
+  filter(str_count(taxon, "\\S+")==2) %>% 
+  filter(occurrences > 1) %>% 
+  nrow() /  dat_occ %>% filter(str_count(taxon, "\\S+")==2) %>% nrow() 
+# 150 out of 371
+
+# how many true genera have more than one occurrence
+dat_occ %>% 
+  filter(str_count(taxon, "\\S+")==1) %>% 
+  filter(occurrences > 1) %>% 
+  nrow() /  dat_occ %>% filter(str_count(taxon, "\\S+")==1) %>% nrow()
+# 49 out of 102
+
+# visualize it for species level
+dat_occ %>% 
+  filter(str_count(taxon, "\\S+")==2) %>% 
+  ggplot(aes(occurrences)) +
+  geom_histogram(binwidth = 1) +
+  scale_y_continuous(breaks = NULL) +
+  labs(x = "# Occurrences per species", 
+       y = NULL) +
+  theme_minimal()
+  
+
+# maybe it's better to use a log-scale here
+dat_occ %>% 
+  filter(str_count(taxon, "\\S+")==2) %>% 
+  mutate(log_occ = log1p(occurrences)) %>% 
+  ggplot(aes(log_occ)) +
+  geom_histogram(binwidth = 0.1) +
+  scale_y_continuous(breaks = NULL) +
+  scale_x_continuous(breaks = c(0, seq(log1p(1), log1p(300), 
+                                       by = log1p(1))), 
+                     labels = c(0, expm1(seq(log1p(1), log1p(300), 
+                                       by = log1p(1))))) +
+  labs(x = "# Occurrences per species on a logarithmic scale", 
+       y = NULL) +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank())
