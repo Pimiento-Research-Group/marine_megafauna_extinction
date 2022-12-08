@@ -258,3 +258,18 @@ dat_occ %>%
        y = NULL) +
   theme_minimal() +
   theme(panel.grid.minor = element_blank())
+
+
+# FAD and LAD -------------------------------------------------------------
+
+
+# for each megafauna species, get the FAD and the LAD
+dat_fad_lad <- tax_names_clean %>% 
+  map(~ filter(dat_pbdb, 
+               accepted_name_clean == .x)) %>% 
+  # drop those without occurrences 
+  keep(function(x) nrow(x) > 0) %>% 
+  map_df(~ .x %>% 
+           group_by(accepted_name_clean) %>% 
+           summarise(LAD = min(min_ma, na.rm = TRUE), 
+                     FAD = max(max_ma)))
