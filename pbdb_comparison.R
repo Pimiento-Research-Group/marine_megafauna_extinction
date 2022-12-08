@@ -237,9 +237,8 @@ dat_occ %>%
   filter(str_count(taxon, "\\S+")==2) %>% 
   ggplot(aes(occurrences)) +
   geom_histogram(binwidth = 1) +
-  scale_y_continuous(breaks = NULL) +
-  labs(x = "# Occurrences per species", 
-       y = NULL) +
+  labs(x = "Total occurrences", 
+       y = "Number of species") +
   theme_minimal()
   
 
@@ -249,13 +248,12 @@ dat_occ %>%
   mutate(log_occ = log1p(occurrences)) %>% 
   ggplot(aes(log_occ)) +
   geom_histogram(binwidth = 0.1) +
-  scale_y_continuous(breaks = NULL) +
   scale_x_continuous(breaks = c(0, seq(log1p(1), log1p(300), 
                                        by = log1p(1))), 
                      labels = c(0, expm1(seq(log1p(1), log1p(300), 
                                        by = log1p(1))))) +
-  labs(x = "# Occurrences per species on a logarithmic scale", 
-       y = NULL) +
+  labs(x = "Total occurrences", 
+       y = "Number of species") +
   theme_minimal() +
   theme(panel.grid.minor = element_blank())
 
