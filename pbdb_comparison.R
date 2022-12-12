@@ -204,19 +204,23 @@ tax_names_clean <- tax_names %>%
   mutate(identified_name_clean = if_else(taxon %in% synon_names$identified_name_clean, 
                                taxon, NA_character_)) %>% 
   left_join(synon_names) %>% 
+  distinct() %>% 
   mutate(taxon_clean = if_else(is.na(accepted_name_clean), 
                                taxon, 
-                               accepted_name_clean)) %>% 
-  pull(taxon_clean)
+                               accepted_name_clean)) 
 
-# calculate the 
-nr_occ <- map_int(tax_names_clean,
+# calculate the number of occurrences
+nr_occ <- map_int(tax_names_clean$taxon_clean,
         ~ filter(dat_pbdb,
                  accepted_name_clean == .x) %>%
           nrow())  
 
-dat_occ <- tibble(taxon = tax_names_clean,
-                  occurrences = nr_occ) 
+dat_occ <- tibble(taxon = tax_names_clean$taxon_clean,
+                  occurrences = nr_occ, 
+                  synonym = tax_names_clean$identified_name_clean) 
+
+dat_occ %>% 
+  drop_na(synonym)
 
 # how many species have more than one occurrence
 dat_occ %>% 
