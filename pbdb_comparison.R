@@ -1,5 +1,6 @@
 library(here)
 library(tidyverse)
+library(divDyn)
 
 
 # read data ---------------------------------------------------------------
@@ -13,7 +14,12 @@ dat_raw <- list.files(path = here("data",
                    show_col_types = FALSE))
 
 
+# stage information
+data("stages")
 
+# table with keys to link stage information
+data("keys")
+  
 # data processing ---------------------------------------------------------
 
 # some simple cleaning steps
@@ -268,14 +274,80 @@ dat_occ %>%
 
 # FAD and LAD -------------------------------------------------------------
 
+# for each megafauna species, get the FAD and the LAD based on PBDB data
+dat_pbdb_fad_lad <- dat_pbdb %>% 
+  filter(accepted_name_clean %in% tax_names_clean$taxon_clean) %>% 
+  # if late interval is empty,
+  # it means that early interval is sufficient to assign age estimates
+  mutate(late_interval = if_else(is.na(late_interval), 
+                            early_interval, 
+                            late_interval)) %>% 
+  # get bin numbers based on look-up table
+  mutate(early_bin = categorize(early_interval, keys$stgInt), 
+         late_bin = categorize(late_interval, keys$stgInt), 
+         across(c(early_bin, late_bin), as.numeric)) %>% 
+  # get age estimates based on bin names
+  # for early age
+  full_join(stages %>% 
+              as_tibble() %>% 
+              select(early_age = mid,
+                     early_bin = stg)) %>% 
+  # for late age
+  full_join(stages %>% 
+              as_tibble() %>% 
+              select(late_age = mid,
+                     late_bin = stg)) %>% 
+  group_by(accepted_name_clean) %>% 
+  summarise(fad = max(late_age), 
+            lad = min(early_age)) %>% 
+  rename(taxon = accepted_name_clean, 
+         lad_pbdb = lad, 
+         fad_pbdb = fad) %>% 
+  drop_na(lad_pbdb, fad_pbdb)
 
-# for each megafauna species, get the FAD and the LAD
-dat_fad_lad <- tax_names_clean %>% 
-  map(~ filter(dat_pbdb, 
-               accepted_name_clean == .x)) %>% 
-  # drop those without occurrences 
-  keep(function(x) nrow(x) > 0) %>% 
-  map_df(~ .x %>% 
-           group_by(accepted_name_clean) %>% 
-           summarise(LAD = min(min_ma, na.rm = TRUE), 
-                     FAD = max(max_ma)))
+
+# repeat but based on entries in the megafauna database
+dat_megafauna_fad_lad <- dat_clean %>% 
+  # get correct names
+  full_join(tax_names_clean %>% 
+              select(Taxa = taxon, 
+                     taxon_clean)) %>% 
+  # get FAD
+  full_join(stages %>%
+              as_tibble() %>% 
+              select(Early_Stage = stage, 
+                     fad = mid)) %>% 
+  # get LAD
+  full_join(stages %>%
+              as_tibble() %>% 
+              select(Late_Stage = stage, 
+                     lad = mid)) %>% 
+  drop_na(fad, lad) %>% 
+  select(taxon = taxon_clean, lad, fad)
+
+
+# combine and compare
+dat_age_diff <- full_join(dat_pbdb_fad_lad, dat_megafauna_fad_lad) %>% 
+  mutate(LAD = lad_pbdb - lad, 
+         FAD = fad_pbdb - fad) %>% 
+  select(taxon, LAD, FAD) 
+
+# how many taxa are having exactly the same estimates
+dat_age_diff %>% 
+  filter(LAD == 0 & FAD == 0)
+# 105, actually not that bad
+
+# general distribution
+dat_age_diff %>% 
+  pivot_longer(cols = c(LAD, FAD)) %>% 
+  ggplot(aes(value, fill = name)) +
+  geom_density(alpha = 0.5, 
+               colour = "grey80") +
+  labs(x = "Age difference in myr", 
+       y = NULL, 
+       subtitle = "Difference between the age estimates for the\nFAD and LAD of the PBDB data and the megafauna data") +
+  scale_y_continuous(breaks = NULL) +
+  scale_fill_discrete(name = "Difference") +
+  theme_minimal() +
+  theme(panel.grid.minor.x = element_line(colour = "grey95"))
+
