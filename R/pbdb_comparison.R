@@ -6,13 +6,9 @@ library(divDyn)
 # read data ---------------------------------------------------------------
 
 # read all files at once and put them into one file
-dat_raw <- list.files(path = here("data",
-                                  "input"),
-                      pattern = "*.csv",
-                      full.names = TRUE) %>% 
-  map_df(~read_csv(.x, 
-                   show_col_types = FALSE))
-
+dat_clean <- read_rds(here("data",
+                           "input",
+                           "megafauna_clean.rds"))
 
 # stage information
 data("stages")
@@ -20,20 +16,11 @@ data("stages")
 # table with keys to link stage information
 data("keys")
   
-# data processing ---------------------------------------------------------
-
-# some simple cleaning steps
-dat_clean <- dat_raw %>% 
-  drop_na(Max_size_m) %>% 
-  filter(Max_size_m >= 1) %>% 
-  filter(Taxonomic_rank != "family")
 
 # get tax names
 tax_names <- dat_clean %>% 
-  distinct(Taxa) %>% 
-  pull(Taxa)
-
-
+  distinct(taxa) %>% 
+  pull(taxa)
 
 
 # get pbdb data -----------------------------------------------------------
@@ -310,24 +297,17 @@ dat_pbdb_fad_lad <- dat_pbdb %>%
 dat_megafauna_fad_lad <- dat_clean %>% 
   # get correct names
   full_join(tax_names_clean %>% 
-              select(Taxa = taxon, 
+              select(taxa = taxon, 
                      taxon_clean)) %>% 
-  # get FAD
-  full_join(stages %>%
-              as_tibble() %>% 
-              select(Early_Stage = stage, 
-                     fad = mid)) %>% 
-  # get LAD
-  full_join(stages %>%
-              as_tibble() %>% 
-              select(Late_Stage = stage, 
-                     lad = mid)) %>% 
-  drop_na(fad, lad) %>% 
-  select(taxon = taxon_clean, lad, fad)
+  select(taxon = taxon_clean,
+         lad = age_late_stage, 
+         fad = age_early_stage) %>% 
+  drop_na(fad, lad)
 
 
 # combine and compare
-dat_age_diff <- full_join(dat_pbdb_fad_lad, dat_megafauna_fad_lad) %>% 
+dat_age_diff <- full_join(dat_pbdb_fad_lad, 
+                          dat_megafauna_fad_lad) %>% 
   mutate(LAD = lad_pbdb - lad, 
          FAD = fad_pbdb - fad) %>% 
   select(taxon, LAD, FAD) 
@@ -335,7 +315,7 @@ dat_age_diff <- full_join(dat_pbdb_fad_lad, dat_megafauna_fad_lad) %>%
 # how many taxa are having exactly the same estimates
 dat_age_diff %>% 
   filter(LAD == 0 & FAD == 0)
-# 105, actually not that bad
+# 135, actually not that bad
 
 # general distribution
 dat_age_diff %>% 
