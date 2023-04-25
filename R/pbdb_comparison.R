@@ -332,3 +332,18 @@ dat_age_diff %>%
   theme_minimal() +
   theme(panel.grid.minor.x = element_line(colour = "grey95"))
 
+
+
+# check pbdb extensions ---------------------------------------------------
+
+# check where the FAD from the PBDB is older 
+# than the FAD from the megafauna database
+dat_age_diff %>% 
+  filter(FAD > 0) 
+# this is the case for twelve taxa
+
+# check where the LAD from the PBDB is younger 
+# than the FAD from the megafauna database
+dat_age_diff %>% 
+  filter(LAD < 0) 
+# this is the case for seventeen taxa
