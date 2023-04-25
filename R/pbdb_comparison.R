@@ -58,7 +58,8 @@ tax_names <- dat_clean %>%
 # # save download
 # write_rds(pbdb_data_raw, here("data",
 #                               "output",
-#                               "pbdb_data_raw.rds"))
+#                               "pbdb_data_raw.rds"), 
+#           compress = "gz")
 
 # read in download
 pbdb_data_raw <- read_rds(here("data",
