@@ -37,7 +37,10 @@ tax_names <- dat_clean %>%
 #     "extant=no",
 #     # classext=taxonomic information, with taxon numbers;
 #     # ident=individual components of the taxonomic identification
-#     "show=classext,ident",
+#     # coords=location of coordination
+#     "show=classext,ident,coords",
+#     # use scotese atlas for plate reconstructions
+#     # "pgm=scotese",
 #     sep="&")
 # 
 #   # get url
@@ -51,14 +54,15 @@ tax_names <- dat_clean %>%
 # url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20"))
 # 
 # # download data on genus level
-# pbdb_data_raw <- map(url_list, ~read_tsv(file = .x, 
-#                                      quote = "", 
-#                                      show_col_types = FALSE))
+# pbdb_data_raw <- map(url_list, ~read_tsv(file = .x,
+#                                      quote = "",
+#                                      show_col_types = FALSE),
+#                      .progress = TRUE)
 # 
 # # save download
 # write_rds(pbdb_data_raw, here("data",
 #                               "output",
-#                               "pbdb_data_raw.rds"), 
+#                               "pbdb_data_raw.rds"),
 #           compress = "gz")
 
 # read in download
