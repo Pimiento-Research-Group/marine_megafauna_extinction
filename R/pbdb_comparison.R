@@ -351,3 +351,74 @@ dat_age_diff %>%
 dat_age_diff %>% 
   filter(LAD < 0) 
 # this is the case for 27 taxa
+
+
+
+# epoch level -------------------------------------------------------------
+
+
+# megafauna
+dat_megafauna_fad_lad_epoch <- dat_clean %>% 
+  # get correct names
+  full_join(tax_names_clean %>% 
+              select(taxa = taxon, 
+                     taxon_clean)) %>% 
+  select(taxon = taxon_clean,
+         early_epoch ,
+         late_epoch) %>% 
+  mutate_if(is.factor, ~ as.character(.x))
+
+# same for pbdb data
+dat_pbdb_fad_lad_epoch <- dat_pbdb_fad_lad %>% 
+  left_join(stages %>% 
+              select(fad_pbdb = mid, 
+                     early_epoch_pbdb = series)) %>% 
+  left_join(stages %>% 
+              select(lad_pbdb = mid, 
+                     late_epoch_pbdb = series)) %>% 
+  select(taxon, early_epoch_pbdb, late_epoch_pbdb)
+
+
+# combine and compare
+dat_age_diff <- full_join(dat_pbdb_fad_lad_epoch, 
+                          dat_megafauna_fad_lad_epoch)  
+
+# how many taxa are having exactly the same estimates
+dat_age_diff %>% 
+  filter(early_epoch_pbdb == early_epoch, 
+         late_epoch_pbdb == late_epoch)
+# 282
+
+# check where the FAD from the PBDB is older 
+# than the FAD from the megafauna database
+dat_age_diff %>% 
+  filter(early_epoch_pbdb != early_epoch) %>% 
+  select(taxon, early_epoch_pbdb, early_epoch) %>% 
+  left_join(stages %>% 
+              distinct(series) %>% 
+              rownames_to_column() %>% 
+              select(pbdb_bin = rowname, early_epoch_pbdb = series)) %>% 
+  left_join(stages %>% 
+              distinct(series) %>% 
+              rownames_to_column() %>% 
+              select(bin = rowname, early_epoch = series)) %>% 
+  filter(pbdb_bin < bin)
+# this is the case for 9 taxa
+
+
+# check where the LAD from the PBDB is younger 
+# than the FAD from the megafauna database
+dat_age_diff %>% 
+  filter(late_epoch_pbdb != late_epoch) %>% 
+  select(taxon, late_epoch_pbdb, late_epoch) %>% 
+  left_join(stages %>% 
+              distinct(series) %>% 
+              rownames_to_column() %>% 
+              select(pbdb_bin = rowname, late_epoch_pbdb = series)) %>% 
+  left_join(stages %>% 
+              distinct(series) %>% 
+              rownames_to_column() %>% 
+              select(bin = rowname, late_epoch = series)) %>% 
+  filter(pbdb_bin > bin)
+         
+# this is the case for 11 taxa
