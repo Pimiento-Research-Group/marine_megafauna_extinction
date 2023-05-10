@@ -149,7 +149,7 @@ pbdbd_names <- c(pbdbd_names, pull(synon_names,
 # calculate how many megafauna taxa have occurrences if we do it on genus level
 # genus level
 genus_level <- word(tax_names, 1)[word(tax_names, 1) %in% word(pbdbd_names, 1)] %>% 
-  length() # 346 genera have at least one occurrence in pbdb
+  length() # 474 genera have at least one occurrence in pbdb
 
 # what's the percentage
 genus_level/ length(tax_names) # approximately 76% / length(tax_names) # approximately 75%
@@ -157,15 +157,15 @@ genus_level/ length(tax_names) # approximately 76% / length(tax_names) # approxi
 
 # how many genus only, i.e. removing those taxa that could be resolved to species level
 genus_level_only <- tax_names[str_count(tax_names, "\\S+")==1][tax_names[str_count(tax_names, "\\S+")==1] %in% pbdbd_names] %>% 
-  length() # 60 genera
+  length() # 68 genera
 
-# percentag for genus only
-genus_level_only / length(tax_names[str_count(tax_names, "\\S+")==1]) # approximately 59 percent
+# percentage for genus only
+genus_level_only / length(tax_names[str_count(tax_names, "\\S+")==1]) # approximately 62 percent
 
 
 # same for species level
 species_level <- tax_names[str_count(tax_names, "\\S+")==2][tax_names[str_count(tax_names, "\\S+")==2] %in% pbdbd_names] %>% 
-  length() # 217 species have at least one occurrence in pbdb
+  length() # 333 species have at least one occurrence in pbdb
 
 # percentage
 species_level / length(tax_names[str_count(tax_names, "\\S+")==2]) # approximately 62%
@@ -225,14 +225,14 @@ dat_occ %>%
   filter(str_count(taxon, "\\S+")==2) %>% 
   filter(occurrences > 1) %>% 
   nrow() /  dat_occ %>% filter(str_count(taxon, "\\S+")==2) %>% nrow() 
-# 150 out of 371
+# 150 out of 493
 
 # how many true genera have more than one occurrence
 dat_occ %>% 
   filter(str_count(taxon, "\\S+")==1) %>% 
   filter(occurrences > 1) %>% 
   nrow() /  dat_occ %>% filter(str_count(taxon, "\\S+")==1) %>% nrow()
-# 49 out of 102
+# 55 out of 108
 
 # visualize it for species level
 dat_occ %>% 
@@ -320,7 +320,7 @@ dat_age_diff <- full_join(dat_pbdb_fad_lad,
 # how many taxa are having exactly the same estimates
 dat_age_diff %>% 
   filter(LAD == 0 & FAD == 0)
-# 135, actually not that bad
+# 195, actually not that bad
 
 # general distribution
 dat_age_diff %>% 
@@ -344,10 +344,10 @@ dat_age_diff %>%
 # than the FAD from the megafauna database
 dat_age_diff %>% 
   filter(FAD > 0) 
-# this is the case for twelve taxa
+# this is the case for 19 taxa
 
 # check where the LAD from the PBDB is younger 
 # than the FAD from the megafauna database
 dat_age_diff %>% 
   filter(LAD < 0) 
-# this is the case for seventeen taxa
+# this is the case for 27 taxa
