@@ -11,12 +11,14 @@ library(tidyverse)
 dat_raw <- 1:5 %>% 
   map(.f = ~ read_sheet("https://docs.google.com/spreadsheets/d/1YgEGDw0m5iaIJcpJufv7AZ0Rnw355Lxbeq4M4HHX7Z4/edit?usp=sharing",
                         sheet = .x)) %>% 
-  map(~ mutate(.x, Max_size_m = as.integer(Max_size_m))) %>% 
+  map(~ mutate(.x, Max_size_m = map(Max_size_m, as.integer)) %>% 
+        unnest(Max_size_m)) %>% 
   bind_rows()
 
 
 # read in stage data
-data(stages, package = "divDyn")
+data(stages, 
+     package = "divDyn")
 
 
 # clean up ----------------------------------------------------------------
@@ -62,14 +64,17 @@ late_stage_lookup <- dat_clean %>%
   filter(is.na(age_late_stage)) %>% 
   distinct(late_stage) %>% 
   drop_na() %>% 
-  add_column(corrected_late_stage = c("Eifelian", "Upper Miocene", 
-                                 "Lower Miocene", "Middle Miocene", 
-                                 "Pliocene", "Upper Miocene", 
-                                 "Pleistocene", "Chattian", 
-                                 "Middle Miocene", "Hauterivian", 
-                                 "Selandian-Thanetian", "Lower Miocene", 
-                                 "Selandian-Thanetian", "Pliocene", 
-                                 "Pliocene", "Pleistocene"))
+  add_column(corrected_late_stage = c("Upper Miocene", "Lower Miocene",
+                                      "Eifelian", "Middle Miocene", 
+                                      "Pliocene", "Upper Miocene",
+                                      "Pleistocene", "Chattian",
+                                      "Middle Miocene", "Hauterivian",
+                                      "Selandian-Thanetian", "Lower Miocene",
+                                      "Selandian-Thanetian", "Olenekian", 
+                                      "Tithonian", "Tithonian",
+                                      "Pliocene", "Pliocene", 
+                                      "Pleistocene"))
+
 
 # same for early stages
 early_stage_lookup <- dat_clean %>%
@@ -82,10 +87,12 @@ early_stage_lookup <- dat_clean %>%
   left_join(late_stage_lookup %>% 
               rename(early_stage = late_stage, 
                      corrected_stage = corrected_late_stage)) %>% 
-  left_join(tibble(early_stage = c("Eilfelian", "Early Eocene", 
-                                   "Early Miocene", "Late Miocene"), 
-                   corrected_stage2 = c("Eifelian", "Ypresian", 
-                                       "Lower Miocene", "Upper Miocene"))) %>% 
+  left_join(tibble(early_stage = c("Eilfelian", "Induan/Olenekian", 
+                                   "Early Eocene", "Early Miocene",
+                                   "Late Miocene"), 
+                   corrected_stage2 = c("Eifelian", "Olenekian", 
+                                        "Ypresian",  "Lower Miocene", 
+                                        "Upper Miocene"))) %>% 
   mutate(corrected_stage = if_else(is.na(corrected_stage), 
                                    corrected_stage2, 
                                    corrected_stage)) %>% 
