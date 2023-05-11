@@ -162,8 +162,6 @@ dat_merged <- dat_pbdb_binned %>%
                        distinct(genus) %>%
                        pull(genus))) %>% 
   rename(taxa = genus) %>% 
-  # add baseline estimate
-  add_column(max_size_m = 0) %>% 
   # add group_id
   left_join(dat_clean_sp %>% 
               distinct(group, taxa = genus) %>% 
@@ -187,14 +185,6 @@ for (i in unique(dat_merged$group)) {
     print()
   
 }
-
-
-dat_merged %>% 
-  ggplot(aes(max_size_m, ext_signal)) +
-  geom_smooth(method = "glm", 
-              method.args = list(family = "binomial")) +
-  facet_wrap(~ group, 
-             scales = "free_x") 
 
 
 
@@ -222,21 +212,43 @@ plot_comp <- tibble(group_id = unique(dat_merged$group_id)) %>%
                   ndraws = 1000) %>% 
   group_by(group_id, group) %>% 
   median_qi() %>% 
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal"))) %>% 
   ggplot(aes(group_id, .epred, 
              colour = group)) +
-  geom_pointrange(aes(ymin = .lower, 
+  geom_linerange(aes(ymin = .lower, 
                       ymax = .upper), 
-                  position = position_dodge(width = 0.2)) +
+                  position = position_dodge(width = 0.3), 
+                 linewidth = 1) +
+  geom_point(aes(fill = group), 
+             colour = "grey20", 
+             position = position_dodge(width = 0.3), 
+             shape = 21, 
+             size = 4) +
   scale_y_continuous(name = "Extinction Risk [%]", 
                      breaks = seq(0, 1, by = 0.2), 
                      labels = seq(0, 1, by = 0.2)*100, 
                      limit = c(0, 1)) + 
   scale_x_discrete(name = NULL, 
                    labels = c("Baseline", "Megafauna")) +
-  guides(colour = guide_legend(nrow = 2, byrow = TRUE)) +
-  labs(colour = NULL) +
+  guides(colour = guide_legend(nrow = 2, byrow = TRUE), 
+         fill = guide_legend(nrow = 2, byrow = TRUE, 
+                             override.aes = list(size = 2))) +
+  scale_color_brewer(type = "qual", 
+                     palette = 2) +
+  scale_fill_brewer(type = "qual", 
+                     palette = 2) +
+  labs(colour = NULL, 
+       fill = NULL) +
   theme_minimal() +
-  theme(legend.position = c(0.4, 0.8))
+  theme(legend.position = c(0.3, 0.85), 
+        legend.background = element_rect(colour = "grey30", 
+                                         linewidth = 0.3))
 
 
 # save plot
@@ -324,53 +336,3 @@ ggsave(plot_logit, filename = here("figures",
 
 
 
-# model trend -------------------------------------------------------------
-
-
-# model body size as a continuous parameter
-# fit hierarchical mixed effect model
-mod_3 <- brm(formula = ext_signal ~ max_size_m + (max_size_m | group),
-             family = bernoulli,
-             data = dat_merged,
-             seed = 1511,
-             control = list(adapt_delta = 0.95),
-             chains = 4,
-             cores = 4,
-             threads = threading(4),
-             iter = 5000,
-             warmup = 1000,
-             backend = "cmdstanr")
-
-# set up grid
-plot_trend <- dat_merged %>% 
-  group_by(group) %>% 
-  summarise(max_size_m = max(max_size_m)) %>% 
-  mutate(max_size_m = map(max_size_m, 
-                         ~ seq(1, .x, length.out = 100))) %>% 
-  unnest(max_size_m) %>% 
-  # add draws from the posterior
-  add_epred_draws(mod_3,
-                    ndraws = 100) %>% 
-  # visualise
-  ggplot(aes(max_size_m, .epred, 
-             colour = group)) +
-  stat_lineribbon(linewidth = 0.5) +
-  scale_fill_brewer(palette = "Greys") +
-  scale_x_continuous(limits = c(1, NA), 
-                     expand = c(0, 0), 
-                     name = "Maximum Size [m]") +
-  scale_y_continuous(name = "Extinction Risk [%]", 
-                     breaks = seq(0, 1, by = 0.2), 
-                     labels = seq(0, 1, by = 0.2)*100, 
-                     limit = c(0, 1)) + 
-  facet_wrap(~ group, scales = "free_x") +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-
-# save plot
-ggsave(plot_trend, filename = here("figures",
-                                   "size_trends_megafauna.png"), 
-       width = 183, height = 100,
-       units = "mm", 
-       bg = "white", device = ragg::agg_png)
