@@ -205,13 +205,20 @@ mod_1 <- brm(formula = ext_signal ~ group_id + (group_id | group),
              warmup = 1000,
              backend = "cmdstanr")
 
+# save model 
+mod_1 %>% 
+  write_rds(here("models", 
+                 "risk_change_model.rds"), 
+            compress = "gz")
+
+
 # set up dataframe for plotting
 plot_comp <- tibble(group_id = unique(dat_merged$group_id)) %>%
   expand_grid(group = unique(dat_merged$group)) %>% 
   add_epred_draws(mod_1, 
                   ndraws = 1000) %>% 
-  group_by(group_id, group) %>% 
-  median_qi() %>% 
+  group_by(group_id) %>% 
+  median_qi(.epred) %>% 
   mutate(group = factor(group, 
                         levels = c("Invert", 
                                    "Fish", 
@@ -275,6 +282,11 @@ mod_2 <- brm(formula = ext_signal ~ group_id:bin_occ + (group_id:bin_occ | group
              warmup = 1000,
              backend = "cmdstanr")
 
+# save model 
+mod_2 %>% 
+  write_rds(here("models", 
+                 "logit_model.rds"), 
+            compress = "gz")
 
 
 # set up grid
@@ -325,9 +337,32 @@ plot_logit <- dat_logit %>%
   geom_line(aes(y = mean_logit, 
                 colour = group), 
             linewidth = 0.8) +
-  scale_x_continuous(breaks = as.integer(seq(25, 95, length.out = 4)), 
-                     labels =  round(stages$mid[seq(25, 95, length.out = 4)], 0), 
-                     name = "Age [myr]") +
+  annotate(geom = "curve",
+           x = 9, xend = 9,
+           y = 0.1, yend = 1.3,
+           curvature = 0,
+           colour = "grey70",
+           arrow = arrow(length = unit(.2,"cm"))) +
+  annotate(geom = "label", 
+           x = 9, y = 2, label = "Higher risk\nfor baseline", 
+           colour = "grey30", 
+           size = 8/.pt, 
+           label.size = 0) +
+  annotate(geom = "curve",
+           x = 9, xend = 9,
+           y = -0.1, yend = -1.3,
+           curvature = 0,
+           colour = "grey70",
+           arrow = arrow(length = unit(.2,"cm"))) +
+  annotate(geom = "label", 
+           x = 9, y = -2, label = "Higher risk\nfor megafauna", 
+           colour = "grey30", 
+           size = 8/.pt, 
+           label.size = 0) +
+  scale_x_continuous(breaks = c(4, 51, 81, 95), 
+                     labels =  round(stages$mid[c(4, 51, 81, 95)], 0), 
+                     name = "Age [myr]", 
+                     limits = c(4, 95)) +
   scale_color_brewer(type = "qual", 
                      palette = 2) +
   labs(colour = NULL, 
@@ -335,7 +370,7 @@ plot_logit <- dat_logit %>%
   theme_minimal() +
   guides(colour = guide_legend(override.aes = list(alpha = 1), 
                                nrow = 1)) +
-  ylim(c(-6.2, 1)) +
+  ylim(c(-6.2, 2)) +
   theme(legend.position = "top")
 
 
