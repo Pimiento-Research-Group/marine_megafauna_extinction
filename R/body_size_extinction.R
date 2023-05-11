@@ -278,7 +278,7 @@ mod_2 <- brm(formula = ext_signal ~ group_id:bin_occ + (group_id:bin_occ | group
 
 
 # set up grid
-plot_logit <- dat_merged %>% 
+dat_logit <- dat_merged %>%
   distinct(group_id, group, bin_occ) %>% 
   # add draws from the posterior
   add_linpred_draws(mod_2,
@@ -302,6 +302,16 @@ plot_logit <- dat_merged %>%
   group_by(group, bin_occ) %>% 
   mutate(.draw = 1:n(), 
          mean_logit = mean(logit)) %>% 
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal")))  
+
+# visualize
+plot_logit <- dat_logit %>%
   ggplot(aes(bin_occ, logit)) +
   geom_hline(yintercept = 0) +
   geom_line(aes(colour = group, 
@@ -318,6 +328,8 @@ plot_logit <- dat_merged %>%
   scale_x_continuous(breaks = as.integer(seq(25, 95, length.out = 4)), 
                      labels =  round(stages$mid[seq(25, 95, length.out = 4)], 0), 
                      name = "Age [myr]") +
+  scale_color_brewer(type = "qual", 
+                     palette = 2) +
   labs(colour = NULL, 
        y = "Extinction Selectivity [logit]") +
   theme_minimal() +
