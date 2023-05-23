@@ -19,19 +19,23 @@ data("keys")
 
 
 
-# reformat data -----------------------------------------------------------
+# get taxon names -----------------------------------------------------------
 
-dat_clean_sp <- dat_clean %>% 
+
+# species
+spec_names <- dat_clean %>% 
   # select only species
   filter(taxonomic_rank == "species") %>% 
-  # that can be resolved to stage level 
-  drop_na(age_early_stage, age_late_stage)
+  mutate(taxa = as.character(taxa)) %>% 
+  pull(taxa)
 
-
-# get taxon names
-tax_names <- dat_clean_sp %>% 
+# genus
+gen_names <- dat_clean %>% 
+  # select only species
+  filter(taxonomic_rank == "species") %>% 
   mutate(genus = as.character(genus)) %>% 
   pull(genus)
+
 
 
 # pbdb_download -----------------------------------------------------------
@@ -41,14 +45,16 @@ get_pbdb_url <- function(taxon){
   params <- paste(
     # select group
     paste("base_name=",taxon, sep = ""),
-    # only return occurrences identified to at least genus
-    # level and lump multiple occurrences from same collection into a single occurrence
-    "idreso=lump_genus",
+    # only return occurrences identified to species
+    "idreso=species",
     # only return extinct genera
     "extant=no",
     # classext=taxonomic information, with taxon numbers;
     # ident=individual components of the taxonomic identification
     "show=classext,ident",
+    # idqual=Exclude all occurrences marked with any of the 
+    # following modifiers: aff. / cf. / ? / "" / informal / sensu lato
+    "idqual=certain",
     sep="&")
   
   # get url
@@ -58,7 +64,7 @@ get_pbdb_url <- function(taxon){
 }
 
 # get urls
-url_list <- get_pbdb_url(tax_names)
+url_list <- get_pbdb_url(gen_names)
 
 
 # download data on genus level
@@ -74,11 +80,8 @@ pbdb_data <- pbdb_data_raw[map(pbdb_data_raw, ncol) > 2] %>%
         ~ .x %>%
           select(1) %>%
           pull()) != "THIS REQUEST RETURNED NO RECORDS"] %>% 
-  # only lumped genus level
-  map(~ filter(.x, 
-               accepted_rank %in% c('genus', 'species'))) %>% 
   # select only relevant columns
-  map(~ select(.x, accepted_name, accepted_rank, genus,  
+  map(~ select(.x, accepted_name, genus,  
                max_ma, min_ma)) %>% 
   # combine lists into one dataframe
   bind_rows()
@@ -108,7 +111,7 @@ dat_pbdb_binned <- pbdb_data %>%
                             include.lowest = TRUE,
                             labels = FALSE)) %>% 
   drop_na(bin_ori, bin_ext) %>% 
-  group_by(genus) %>% 
+  group_by(accepted_name) %>% 
   summarise(bin_ori = min(bin_ori), 
             bin_ext = max(bin_ext)) %>% 
   ungroup() %>% 
@@ -116,75 +119,23 @@ dat_pbdb_binned <- pbdb_data %>%
   mutate(bin_occ = map2(.x = bin_ori, 
                         .y = bin_ext,
                         .f = ~ seq(.x, .y, by = 1))) %>% 
-  select(genus, bin_occ, bin_ext) %>% 
+  select(accepted_name, bin_occ, bin_ext) %>% 
   unnest(bin_occ) %>% 
   # create extinction signal
-  group_by(genus) %>% 
+  group_by(accepted_name) %>% 
   mutate(ext_signal = if_else(bin_occ == bin_ext, 1, 0)) %>% 
   ungroup() %>% 
-  add_column(group_id = "baseline")
-
-# same for megafauna data
-dat_megafauna_binned <- dat_clean_sp %>% 
-  mutate(taxa = as.character(taxa)) %>% 
-  select(taxa,
-         age_early_stage,
-         age_late_stage) %>% 
-  # bin fad and lad to stages
-  mutate(bin_ori = 95 - cut(age_early_stage, breaks = dat_stages$bottom,
-                            include.lowest = TRUE,
-                            labels = FALSE),
-         bin_ext = 96 - cut(age_late_stage, breaks = dat_stages$top,
-                            include.lowest = TRUE,
-                            labels = FALSE)) %>% 
-  drop_na(bin_ori, bin_ext) %>% 
-  # fill in duration bins
-  mutate(bin_occ = map2(.x = bin_ori, 
-                        .y = bin_ext,
-                        .f = ~ seq(.x, .y, by = 1))) %>% 
-  select(taxa, bin_occ, bin_ext) %>% 
-  unnest(bin_occ) %>% 
-  # create extinction signal
-  group_by(taxa) %>% 
-  mutate(ext_signal = if_else(bin_occ == bin_ext, 1, 0)) %>% 
-  ungroup() %>% 
-  add_column(group_id = "megafauna")
-
-
-
-# combine and merge -------------------------------------------------------
-
-
-# merge
-dat_merged <- dat_pbdb_binned %>%
-  # clean up unresolved genus names
-  filter(genus %in% (dat_clean_sp %>%
-                       distinct(genus) %>%
-                       pull(genus))) %>% 
-  rename(taxa = genus) %>% 
+  # add group id
+  mutate(group_id = if_else(accepted_name %in% spec_names, 
+                            "megafauna", 
+                            "baseline")) %>% 
   # add group_id
-  left_join(dat_clean_sp %>% 
-              distinct(group, taxa = genus) %>% 
+  mutate(genus = word(accepted_name, 1)) %>% 
+  left_join(dat_clean %>%
+              filter(taxonomic_rank == "species") %>%
+              distinct(group, genus) %>%
               mutate_if(is.factor, as.character)) %>% 
-  # bind with megafauna data
-  bind_rows(dat_megafauna_binned %>% 
-              left_join(dat_clean_sp %>%
-                          select(group, taxa, max_size_m))) 
-
-# quick look
-for (i in unique(dat_merged$group)) {
-  
-  print(i)
-
-  dat_merged %>% 
-    filter(group == i) %>%
-    glm(data = .,
-        formula = ext_signal ~ group_id,
-        family = "binomial") %>% 
-    summary() %>% 
-    print()
-  
-}
+  drop_na(group)
 
 
 
@@ -195,7 +146,7 @@ for (i in unique(dat_merged$group)) {
 # fit hierarchical mixed effect model
 mod_1 <- brm(formula = ext_signal ~ group_id + (group_id | group),
              family = bernoulli,
-             data = dat_merged,
+             data = dat_pbdb_binned,
              seed = 1511,
              control = list(adapt_delta = 0.95),
              chains = 4,
@@ -213,11 +164,11 @@ mod_1 %>%
 
 
 # set up dataframe for plotting
-plot_comp <- tibble(group_id = unique(dat_merged$group_id)) %>%
-  expand_grid(group = unique(dat_merged$group)) %>% 
+dat_comp <- tibble(group_id = unique(dat_pbdb_binned$group_id)) %>%
+  expand_grid(group = unique(dat_pbdb_binned$group)) %>% 
   add_epred_draws(mod_1, 
                   ndraws = 1000) %>% 
-  group_by(group_id) %>% 
+  group_by(group, group_id) %>% 
   median_qi(.epred) %>% 
   mutate(group = factor(group, 
                         levels = c("Invert", 
@@ -225,7 +176,20 @@ plot_comp <- tibble(group_id = unique(dat_merged$group_id)) %>%
                                    "Chondrichthyes", 
                                    "Reptile", 
                                    "Bird", 
-                                   "Mammal"))) %>% 
+                                   "Mammal"))) 
+
+# differences
+dat_comp %>% 
+  pivot_wider(names_from = group_id, 
+              values_from = c(.epred, .lower, .upper)) %>% 
+  mutate(risk_diff = .epred_baseline - .epred_megafauna, 
+         risk_diff_low = .lower_baseline - .lower_megafauna,
+         risk_diff_high = .upper_baseline - .upper_megafauna,
+         .before = 2) 
+
+
+# visualise
+plot_comp <- dat_comp %>%
   ggplot(aes(group_id, .epred, 
              colour = group)) +
   geom_linerange(aes(ymin = .lower, 
@@ -272,7 +236,7 @@ ggsave(plot_comp, filename = here("figures",
 # fit hierarchical mixed effect model
 mod_2 <- brm(formula = ext_signal ~ group_id:bin_occ + (group_id:bin_occ | group),
              family = bernoulli,
-             data = dat_merged,
+             data = dat_pbdb_binned,
              seed = 1511,
              control = list(adapt_delta = 0.95),
              chains = 4,
@@ -290,7 +254,7 @@ mod_2 %>%
 
 
 # set up grid
-dat_logit <- dat_merged %>%
+dat_logit <- dat_pbdb_binned %>%
   distinct(group_id, group, bin_occ) %>% 
   # add draws from the posterior
   add_linpred_draws(mod_2,
@@ -370,7 +334,7 @@ plot_logit <- dat_logit %>%
   theme_minimal() +
   guides(colour = guide_legend(override.aes = list(alpha = 1), 
                                nrow = 1)) +
-  ylim(c(-6.2, 2)) +
+  ylim(c(-2.2, 2)) +
   theme(legend.position = "top")
 
 
