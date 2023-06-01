@@ -84,7 +84,7 @@ plot_2 <- dat_clean %>%
 
 plot_first <- plot_1 /
   plot_2 +
-  plot_annotation(tag_levels = "a")
+  plot_annotation(tag_levels = "A")
 
 # save plot
 ggsave(plot_first, filename = here("figures",
