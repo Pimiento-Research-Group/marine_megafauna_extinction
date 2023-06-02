@@ -47,6 +47,10 @@ plot_2 <- dat_clean %>%
   mutate(log_max = log(max_size_m)) %>% 
   ggplot(aes(age_early_stage, log_max, 
              fill = group)) +
+  geom_vline(xintercept = c(443, 365, 252, 
+                            210, 66), 
+             colour = "grey70", 
+             linetype = "dashed") +
   geom_point(position = position_jitter(width = 0, 
                                         height = 0.1, 
                                         seed = 123), 
@@ -77,19 +81,68 @@ plot_2 <- dat_clean %>%
 
 
 
+# ranges ------------------------------------------------------------------
+
+# visualise
+plot_3 <- dat_clean %>% 
+  mutate(taxa = fct_reorder(taxa, age_early_stage)) %>% 
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal"))) %>% 
+  ggplot(aes(y = taxa, 
+             colour = group)) +
+  geom_vline(xintercept = c(443, 365, 252, 
+                            210, 66), 
+             colour = "grey70", 
+             linetype = "dashed") +
+  geom_linerange(aes(xmin = age_early_stage, 
+                     xmax = age_late_stage), 
+                 linewidth = 1, 
+                 alpha = 0.5) +
+  labs(y = "Taxon ranges", 
+       x = "Age [myr]") +
+  scale_colour_brewer(type = "qual",
+                      palette = 2,
+                      name = NULL) +
+  coord_geo(xlim = c(0, 480), 
+            dat = list("periods", "eras"),
+            pos = list("b", "b"),
+            alpha = 0.2, 
+            height = unit(0.8, "line"), 
+            size = list(7/.pt, 10/.pt),
+            lab_color = "grey20", 
+            color = "grey20", 
+            abbrv = list(TRUE, FALSE), 
+            fill = "white",
+            expand = TRUE, 
+            lwd = list(0.4, 0.5)) +
+  scale_x_reverse() +
+  theme_classic(base_size = 12) +
+  guides(colour = guide_legend(nrow = 1,
+                               byrow = TRUE)) +
+  theme(legend.position = "none", 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank())
+
+
 
 
 # patch together ----------------------------------------------------------
 
 
 plot_first <- plot_1 /
-  plot_2 +
+  plot_2 / 
+  plot_3 +
   plot_annotation(tag_levels = "A")
 
 # save plot
 ggsave(plot_first, filename = here("figures",
                                   "figure_1.png"), 
-       width = 183, height = 150,
+       width = 183, height = 200,
        units = "mm", 
        bg = "white", device = ragg::agg_png)     
 
