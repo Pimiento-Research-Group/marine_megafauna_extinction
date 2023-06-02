@@ -1,7 +1,6 @@
 library(here)
 library(Compadre)
 library(tidyverse)
-library(tidybayes)
 
 
 # load data ---------------------------------------------------------------
@@ -136,5 +135,6 @@ dat_samples <- dat_mod %>%
 
 # visualise
 dat_samples %>% 
-  ggplot(aes(y = group_id, x = samp_inx)) +
-  stat_halfeye()
+  write_rds(here("data", 
+                 "output",
+                 "cmr_data.rds"))

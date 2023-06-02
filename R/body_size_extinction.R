@@ -3,6 +3,7 @@ library(tidyverse)
 library(divDyn)
 library(brms)
 library(tidybayes)
+library(patchwork)
 
 # read data ---------------------------------------------------------------
 
@@ -216,7 +217,7 @@ plot_comp <- dat_comp %>%
                      palette = 2) +
   labs(colour = NULL, 
        fill = NULL) +
-  theme_minimal() +
+  theme_classic(base_size = 12) +
   theme(legend.position = c(0.3, 0.85), 
         legend.background = element_rect(colour = "grey30", 
                                          linewidth = 0.3))
@@ -347,3 +348,36 @@ ggsave(plot_logit, filename = here("figures",
 
 
 
+
+# add capture mark recapture ----------------------------------------------
+
+# read in sampling rate results from crm analysis
+dat_crm <- read_rds(here("data",
+                         "output",
+                         "cmr_data.rds"))
+
+# visualise
+plot_crm <- dat_crm %>%
+  mutate(group_id = str_to_title(group_id)) %>% 
+  ggplot(aes(y = group_id, x = samp_inx)) +
+  stat_halfeye() +
+  theme_minimal(base_size = 12) +
+  labs(y = NULL, 
+       x = "Sampling completeness") +
+  scale_x_continuous(breaks = c(0, 0.05, 0.1), 
+                     limits = c(0, 0.13)) +
+  theme(panel.grid = element_blank())
+
+
+# patch together
+plot_final <- plot_comp / 
+  plot_crm +
+  plot_layout(heights = c(4, 1)) +
+  plot_annotation(tag_levels = "A")
+
+# and save
+ggsave(plot_final, filename = here("figures",
+                                  "baseline_vs_megafauna.png"), 
+       width = 183, height = 150,
+       units = "mm", 
+       bg = "white", device = ragg::agg_png)
