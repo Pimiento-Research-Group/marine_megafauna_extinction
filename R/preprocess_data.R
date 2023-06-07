@@ -84,7 +84,7 @@ early_stage_lookup <- dat_clean %>%
 
 
 # add ages
-dat_clean_ages <- dat_clean %>% 
+dat_clean_ages <- dat_clean %>%
   left_join(late_stage_lookup) %>% 
   left_join(early_stage_lookup) %>% 
   mutate(late_epoch = if_else(!is.na(corrected_late_epoch), 
@@ -92,13 +92,13 @@ dat_clean_ages <- dat_clean %>%
                               late_epoch)) %>% 
   left_join(stages %>% 
               group_by(late_epoch = series) %>% 
-              summarise(age_late_epoch = max(top))) %>% 
+              summarise(age_late_epoch = min(top))) %>% 
   mutate(early_epoch = if_else(!is.na(corrected_early_epoch), 
                               corrected_early_epoch, 
                               early_epoch)) %>% 
   left_join(stages %>% 
               group_by(early_epoch = series) %>% 
-              summarise(age_early_epoch = min(bottom)))
+              summarise(age_early_epoch = max(bottom))) 
 
 
 # save data ---------------------------------------------------------------
