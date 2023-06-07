@@ -55,20 +55,34 @@ plot_2 <- dat_clean %>%
                                    "Reptile",
                                    "Bird",
                                    "Mammal"))) %>% 
-  ggplot(aes(xmin = age_early_epoch, 
-             xmax = age_late_epoch, 
+  # plot at the mid points of epochs
+  mutate(age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>% 
+  ggplot(aes(x = age_mid, 
              y = log_max, 
              fill = group)) +
   geom_vline(xintercept = c(443, 365, 252, 
                             210, 66), 
              colour = "grey70", 
              linetype = "dashed") +
-  geom_linerange(aes(colour = group), 
-                 position = position_dodge2(width = 0.143), 
-                 alpha = 0.8) +
-  scale_colour_brewer(type = "qual",
+  stat_smooth(aes(colour = group), 
+              geom = "line", 
+              method = "lm", 
+              se = FALSE, 
+              alpha = 0.6, 
+              linewidth = 0.5) +
+  geom_point(aes(fill = group), 
+             position = position_jitter(height = 0.1,
+                                        seed = 123),
+             alpha = 0.4,
+             size = 2.5,
+             shape = 21, 
+             colour = "grey30") +
+  scale_fill_brewer(type = "qual",
                     palette = 2,
                     name = NULL) +
+  scale_colour_brewer(type = "qual",
+                      palette = 2,
+                      name = NULL) +
   scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
                      labels = c(1, 2, 5, 10, 20)) +
   labs(y = "Maximum body size [m]", 
