@@ -53,67 +53,52 @@ dat_clean <- dat_raw %>%
   
 
 
-# add ages by stages ------------------------------------------------------
+# add ages by series ------------------------------------------------------
 
 
 # get weird stage entries
 late_stage_lookup <- dat_clean %>% 
   left_join(stages %>% 
-              select(late_stage = stage, 
-                     age_late_stage = mid)) %>% 
-  filter(is.na(age_late_stage)) %>% 
-  distinct(late_stage) %>% 
+              group_by(series) %>% 
+              summarise(late_age = max(top)) %>% 
+              rename(late_epoch = series)) %>% 
+  filter(is.na(late_age)) %>% 
+  distinct(late_epoch) %>% 
   drop_na() %>% 
-  add_column(corrected_late_stage = c("Upper Miocene", "Lower Miocene",
-                                      "Eifelian", "Middle Miocene", 
-                                      "Pliocene", "Upper Miocene",
-                                      "Pleistocene", "Chattian",
-                                      "Middle Miocene", "Hauterivian",
-                                      "Selandian-Thanetian", "Lower Miocene",
-                                      "Selandian-Thanetian", "Olenekian", 
-                                      "Tithonian", "Tithonian",
-                                      "Pliocene", "Pliocene", 
-                                      "Pleistocene"))
+  add_column(corrected_late_epoch = c("Maolingian", 
+                                      "Lower Cretaceous", 
+                                      "Lower Triassic"))
 
 
 # same for early stages
-early_stage_lookup <- dat_clean %>%
+early_stage_lookup <- dat_clean %>% 
   left_join(stages %>% 
-              select(early_stage = stage, 
-                     age_early_stage = mid)) %>% 
-  filter(is.na(age_early_stage)) %>% 
-  distinct(early_stage) %>% 
+              group_by(series) %>% 
+              summarise(early_age = min(bottom)) %>% 
+              rename(early_epoch = series)) %>% 
+  filter(is.na(early_age)) %>% 
+  distinct(early_epoch) %>% 
   drop_na() %>% 
-  left_join(late_stage_lookup %>% 
-              rename(early_stage = late_stage, 
-                     corrected_stage = corrected_late_stage)) %>% 
-  left_join(tibble(early_stage = c("Eilfelian", "Induan/Olenekian", 
-                                   "Early Eocene", "Early Miocene",
-                                   "Late Miocene"), 
-                   corrected_stage2 = c("Eifelian", "Olenekian", 
-                                        "Ypresian",  "Lower Miocene", 
-                                        "Upper Miocene"))) %>% 
-  mutate(corrected_stage = if_else(is.na(corrected_stage), 
-                                   corrected_stage2, 
-                                   corrected_stage)) %>% 
-  select(-corrected_stage2, corrected_early_stage = corrected_stage)
+  add_column(corrected_early_epoch = c("Maolingian", 
+                                      "Lower Triassic")) 
+
 
 # add ages
 dat_clean_ages <- dat_clean %>% 
   left_join(late_stage_lookup) %>% 
   left_join(early_stage_lookup) %>% 
-  mutate(late_stage = if_else(!is.na(corrected_late_stage), 
-                              corrected_late_stage, 
-                              late_stage)) %>% 
+  mutate(late_epoch = if_else(!is.na(corrected_late_epoch), 
+                              corrected_late_epoch, 
+                              late_epoch)) %>% 
   left_join(stages %>% 
-              select(late_stage = stage, 
-                     age_late_stage = mid)) %>% 
-  mutate(early_stage = if_else(!is.na(corrected_early_stage), 
-                              corrected_early_stage, 
-                              early_stage)) %>% 
+              group_by(late_epoch = series) %>% 
+              summarise(age_late_epoch = max(top))) %>% 
+  mutate(early_epoch = if_else(!is.na(corrected_early_epoch), 
+                              corrected_early_epoch, 
+                              early_epoch)) %>% 
   left_join(stages %>% 
-              select(early_stage = stage, 
-                     age_early_stage = mid)) 
+              group_by(early_epoch = series) %>% 
+              summarise(age_early_epoch = min(bottom)))
 
 
 # save data ---------------------------------------------------------------
