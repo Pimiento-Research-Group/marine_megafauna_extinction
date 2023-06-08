@@ -54,6 +54,10 @@ plot_1 <- dat_clean %>%
         panel.grid.major = element_line(colour = "grey95"))
 
 
+
+# and through time --------------------------------------------------------
+
+
 plot_2 <- dat_clean %>% 
   count(early_era, vertical, habitat, guild) %>% 
   drop_na() %>% 
@@ -78,6 +82,10 @@ plot_2 <- dat_clean %>%
                                    hjust = 0.85), 
         strip.background = element_rect(linewidth = 1), 
         panel.grid.major = element_line(colour = "grey95"))
+
+
+
+# save final plot ---------------------------------------------------------
 
 
 # patch together
