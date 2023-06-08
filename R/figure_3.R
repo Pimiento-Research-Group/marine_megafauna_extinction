@@ -1,0 +1,133 @@
+library(here)
+library(tidyverse)
+library(patchwork)
+
+# read data ---------------------------------------------------------------
+
+# read cleaned data file
+dat_clean <- read_rds(here("data",
+                           "input",
+                           "megafauna_clean.rds"))
+
+data(stages, package = "divDyn")
+
+
+
+# ecology per group -------------------------------------------------------
+
+plot_1 <- dat_clean %>%
+  count(group, vertical, habitat, guild) %>% 
+  drop_na() %>% 
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal"))) %>% 
+  ggplot(aes(vertical, habitat, 
+             shape = guild, 
+             size = n, 
+             colour = group)) +
+  geom_point() +
+  scale_shape_manual(values = c(0, 1, 2)) +
+  scale_size_continuous(range = c(1, 9), 
+                        breaks = c(1, 10, 20, 30)) +
+  scale_colour_brewer(type = "qual",
+                      palette = 2,
+                      name = NULL) +
+  labs(x = NULL, 
+       y = NULL, 
+       size = NULL, 
+       shape = NULL) +
+  guides(colour = "none",
+         size = guide_legend(
+           override.aes = list(shape = 3))) +
+  facet_wrap(~ group) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom", 
+        legend.spacing.x = unit(1, 'mm'), 
+        axis.text.x = element_text(angle = 18,
+                                   vjust = 0.98,
+                                   hjust = 0.85), 
+        strip.background = element_rect(linewidth = 1), 
+        panel.grid.major = element_line(colour = "grey95"))
+
+
+plot_2 <- dat_clean %>% 
+  count(early_era, vertical, habitat, guild) %>% 
+  drop_na() %>% 
+  ggplot(aes(vertical, habitat, 
+             shape = guild, 
+             size = n, 
+             colour = early_era)) +
+  geom_point() +
+  scale_shape_manual(values = c(0, 1, 2)) +
+  scale_colour_manual(values = rev(c(colorspace::darken("#fcea10", 0.1),
+                                     "#5dc5ea", "#a9c6a9"))) +
+  labs(x = NULL, 
+       y = NULL, 
+       size = NULL, 
+       shape = NULL) +
+  guides(colour = "none") +
+  facet_wrap(~ early_era) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 18,
+                                   vjust = 0.98,
+                                   hjust = 0.85), 
+        strip.background = element_rect(linewidth = 1), 
+        panel.grid.major = element_line(colour = "grey95"))
+
+
+# patch together
+plot_final <- plot_1 / plot_2 +
+  plot_layout(heights = c(2, 1)) +
+  plot_annotation(tag_levels = "A")
+
+# save plot
+ggsave(plot_final, filename = here("figures",
+                                    "figure_3.png"), 
+       width = 183, height = 180,
+       units = "mm", 
+       bg = "white", device = ragg::agg_png)  
+
+
+dat_clean %>%
+  count(group, vertical, habitat, guild) %>% 
+  drop_na() %>% 
+  filter(group == "Bird")
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal"))) %>% 
+  ggplot(aes(vertical, habitat, 
+             shape = guild, 
+             size = n, 
+             colour = group)) +
+  geom_point() +
+  scale_shape_manual(values = c(0, 1, 2)) +
+  scale_size_continuous(range = c(1, 9), 
+                        breaks = c(1, 10, 20, 30)) +
+  scale_colour_brewer(type = "qual",
+                      palette = 2,
+                      name = NULL) +
+  labs(x = NULL, 
+       y = NULL, 
+       size = NULL, 
+       shape = NULL) +
+  guides(colour = "none",
+         size = guide_legend(
+           override.aes = list(shape = 21))) +
+  facet_wrap(~ interaction(group, early_era)) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom", 
+        legend.spacing.x = unit(1, 'mm'), 
+        axis.text.x = element_text(angle = 18,
+                                   vjust = 0.98,
+                                   hjust = 0.85), 
+        strip.background = element_rect(linewidth = 1), 
+        panel.grid.major = element_line(colour = "grey95"))

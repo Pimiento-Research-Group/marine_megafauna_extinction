@@ -43,7 +43,7 @@ plot_1 <- dat_clean %>%
                       palette = 2,
                       name = NULL) +
   scale_y_discrete(limits = rev, 
-                   expand = expansion(mult = c(0.05, 0))) +
+                   expand = expansion(mult = c(0.08, 0))) +
   coord_geo(xlim = c(0, 520), 
             dat = list("periods", "eras"),
             pos = list("b", "b"),
@@ -69,21 +69,23 @@ plot_1 <- dat_clean %>%
 # fads and lads over time -------------------------------------------------
 
 plot_2 <- dat_clean %>%
-  mutate(early_period = factor(early_period, levels = stages %>% 
-                                 distinct(system) %>% 
+  mutate(early_epoch = factor(early_epoch, levels = stages %>% 
+                                 distinct(series) %>% 
                                  pull)) %>% 
-  count(early_period, name = "FAD") %>% 
+  count(early_epoch, name = "FAD") %>% 
+  mutate(FAD = FAD/sum(FAD) * 100) %>% 
   full_join(dat_clean %>% 
-              mutate(late_period = factor(late_period, levels = stages %>% 
-                                            distinct(system) %>% 
+              mutate(late_epoch = factor(late_epoch, levels = stages %>% 
+                                            distinct(series) %>% 
                                             pull)) %>% 
-              count(late_period, name = "LAD") %>% 
-              rename(early_period = late_period)) %>% 
+              count(late_epoch, name = "LAD") %>% 
+              rename(early_epoch = late_epoch)) %>% 
   drop_na() %>% 
-  rename(period = early_period) %>% 
+  mutate(LAD = LAD/sum(LAD) * 100) %>% 
+  rename(epoch = early_epoch) %>% 
   # add age
   left_join(stages %>% 
-              group_by(period = system) %>% 
+              group_by(epoch = series) %>% 
               summarise(mid_age = mean(mid))) %>% 
   pivot_longer(cols = c(LAD, FAD)) %>% 
   ggplot(aes(mid_age, value, 
@@ -95,16 +97,27 @@ plot_2 <- dat_clean %>%
                                "#CB8387"),
                     name = NULL) +
   scale_x_reverse() +
-  theme_void(base_size = 8) +
+  scale_y_continuous(breaks = c(0, 10, 20), 
+                     labels = paste0(c(0, 10, 20), "%"), 
+                     position = "right") +
+  coord_cartesian(expand = FALSE) +
+  theme_classic(base_size = 8) +
+  labs(y = NULL, 
+       x = NULL) +
   theme(legend.position = c(0.05, 0.6), 
-        legend.key.size = unit(2, "mm"))
+        legend.key.size = unit(2, "mm"), 
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(), 
+        axis.line.x = element_blank(),
+        panel.background = element_rect(fill = 'transparent'),
+        plot.background = element_rect(fill = 'transparent', color = NA))
 
 
 # patch together ----------------------------------------------------------
 
 
 plot_second <- plot_1 +
-  inset_element(plot_2, 0, 0, 1, 0.3)
+  inset_element(plot_2, 0.05, 0, 1, 0.3)
   
 # save plot
 ggsave(plot_second, filename = here("figures",
