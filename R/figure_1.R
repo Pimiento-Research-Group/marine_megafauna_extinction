@@ -176,32 +176,32 @@ plot_4 <- dat_clean %>%
   # add age
   left_join(stages %>% 
               group_by(epoch = series) %>% 
-              summarise(mid_age = min(top))) %>% 
+              summarise(mid_age = mean(mid))) %>% 
   pivot_longer(cols = c(LAD, FAD)) %>% 
   ggplot(aes(mid_age, value, 
              fill = name)) + 
-  geom_col(position = position_dodge(), 
-           alpha = 0.5, 
-           width = 10) +
+  geom_col(position = position_dodge(width = 5), 
+           # alpha = 0.5, 
+           width = 7) +
   scale_fill_manual(values = c("#4A7971",
                                "#CB8387"),
                     name = NULL) +
   scale_x_reverse() +
-  scale_y_continuous(breaks = c(0, 10, 20), 
-                     labels = paste0(c(0, 10, 20), "%"), 
+  scale_y_continuous(breaks = c(0, 10, 20),
+                     labels = paste0(c(0, 10, 20), "%"),
                      position = "right") +
   coord_cartesian(expand = FALSE) +
   theme_classic(base_size = 8) +
   labs(y = NULL, 
        x = NULL) +
-  theme(legend.position = c(0.97, 1.5), 
-        legend.key.size = unit(2, "mm"), 
+  theme(legend.position = c(0.97, 1.5),
+        legend.key.size = unit(2, "mm"),
         axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(), 
+        axis.ticks.x = element_blank(),
         axis.line.x = element_blank(),
         legend.background = element_rect(fill = 'transparent', color = NA),
         panel.background = element_rect(fill = 'transparent'),
-        plot.background = element_rect(fill = 'transparent', color = NA))
+        plot.background = element_rect(fill = 'transparent', color = NA)) 
 
 
 
