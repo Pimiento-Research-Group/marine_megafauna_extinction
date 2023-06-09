@@ -25,45 +25,45 @@ tax_names <- dat_clean %>%
 
 # get pbdb data -----------------------------------------------------------
 
-# # set up function
-# get_pbdb_url <- function(taxon){
-#   params <- paste(
-#     # select group
-#     paste("base_name=",taxon, sep = ""),
-#     # only return occurrences identified to at least genus
-#     # level and lump multiple occurrences from same collection into a single occurrence
-#     # "idreso=lump_genus",
-#     # only return extinct genera
-#     "extant=no",
-#     # classext=taxonomic information, with taxon numbers;
-#     # ident=individual components of the taxonomic identification
-#     # coords=location of coordination
-#     "show=classext,ident,coords",
-#     # use scotese atlas for plate reconstructions
-#     # "pgm=scotese",
-#     sep="&")
-# 
-#   # get url
-#   uri <- paste("https://paleobiodb.org/data1.2/occs/list.tsv?", params, sep="")
-# 
-#   uri
-# }
-# 
-# # get urls, adding "%20" instead of white space in the species names
-# # resolves the API problem
-# url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20"))
-# 
-# # download data on genus level
-# pbdb_data_raw <- map(url_list, ~read_tsv(file = .x,
-#                                      quote = "",
-#                                      show_col_types = FALSE),
-#                      .progress = TRUE)
-# 
-# # save download
-# write_rds(pbdb_data_raw, here("data",
-#                               "output",
-#                               "pbdb_data_raw.rds"),
-#           compress = "gz")
+# set up function
+get_pbdb_url <- function(taxon){
+  params <- paste(
+    # select group
+    paste("base_name=",taxon, sep = ""),
+    # only return occurrences identified to at least genus
+    # level and lump multiple occurrences from same collection into a single occurrence
+    # "idreso=lump_genus",
+    # only return extinct genera
+    "extant=no",
+    # classext=taxonomic information, with taxon numbers;
+    # ident=individual components of the taxonomic identification
+    # coords=location of coordination
+    "show=classext,ident,coords",
+    # use scotese atlas for plate reconstructions
+    # "pgm=scotese",
+    sep="&")
+
+  # get url
+  uri <- paste("https://paleobiodb.org/data1.2/occs/list.tsv?", params, sep="")
+
+  uri
+}
+
+# get urls, adding "%20" instead of white space in the species names
+# resolves the API problem
+url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20"))
+
+# download data on genus level
+pbdb_data_raw <- map(url_list, ~read_tsv(file = .x,
+                                     quote = "",
+                                     show_col_types = FALSE),
+                     .progress = TRUE)
+
+# save download
+write_rds(pbdb_data_raw, here("data",
+                              "output",
+                              "pbdb_data_raw.rds"),
+          compress = "gz")
 
 # read in download
 pbdb_data_raw <- read_rds(here("data",
@@ -149,10 +149,10 @@ pbdbd_names <- c(pbdbd_names, pull(synon_names,
 # calculate how many megafauna taxa have occurrences if we do it on genus level
 # genus level
 genus_level <- word(tax_names, 1)[word(tax_names, 1) %in% word(pbdbd_names, 1)] %>% 
-  length() # 474 genera have at least one occurrence in pbdb
+  length() # 484 genera have at least one occurrence in pbdb
 
 # what's the percentage
-genus_level/ length(tax_names) # approximately 76% / length(tax_names) # approximately 75%
+genus_level/ length(tax_names) # approximately 80% / length(tax_names) # approximately 75%
 
 
 # how many genus only, i.e. removing those taxa that could be resolved to species level
@@ -160,15 +160,15 @@ genus_level_only <- tax_names[str_count(tax_names, "\\S+")==1][tax_names[str_cou
   length() # 68 genera
 
 # percentage for genus only
-genus_level_only / length(tax_names[str_count(tax_names, "\\S+")==1]) # approximately 62 percent
+genus_level_only / length(tax_names[str_count(tax_names, "\\S+")==1]) # approximately 63 percent
 
 
 # same for species level
 species_level <- tax_names[str_count(tax_names, "\\S+")==2][tax_names[str_count(tax_names, "\\S+")==2] %in% pbdbd_names] %>% 
-  length() # 333 species have at least one occurrence in pbdb
+  length() # 339 species have at least one occurrence in pbdb
 
 # percentage
-species_level / length(tax_names[str_count(tax_names, "\\S+")==2]) # approximately 62%
+species_level / length(tax_names[str_count(tax_names, "\\S+")==2]) # approximately 69%
 
 
 
@@ -225,7 +225,7 @@ dat_occ %>%
   filter(str_count(taxon, "\\S+")==2) %>% 
   filter(occurrences > 1) %>% 
   nrow() /  dat_occ %>% filter(str_count(taxon, "\\S+")==2) %>% nrow() 
-# 150 out of 493
+# 212 out of 493
 
 # how many true genera have more than one occurrence
 dat_occ %>% 
@@ -278,6 +278,8 @@ dat_pbdb_fad_lad <- dat_pbdb %>%
   mutate(early_bin = categorize(early_interval, keys$stgInt), 
          late_bin = categorize(late_interval, keys$stgInt), 
          across(c(early_bin, late_bin), as.numeric)) %>% 
+  left_join(stages %>% 
+              select(early_epoch = series, early_bin = stg))
   # get age estimates based on bin names
   # for early age
   full_join(stages %>% 
@@ -305,8 +307,8 @@ dat_megafauna_fad_lad <- dat_clean %>%
               select(taxa = taxon, 
                      taxon_clean)) %>% 
   select(taxon = taxon_clean,
-         lad = age_late_stage, 
-         fad = age_early_stage) %>% 
+         lad = age_late_epoch, 
+         fad = age_early_epoch) %>% 
   drop_na(fad, lad)
 
 
