@@ -45,7 +45,35 @@ plot_1 <- dat_clean %>%
 
 # over time ---------------------------------------------------------------
 
+# calculate trend lines
+dat_clean %>%
+  mutate(age_mid = -((age_early_epoch - age_late_epoch)/2 + age_late_epoch), 
+         log_max = log(max_size_m)) %>% 
+  group_by(group) %>%
+  nest() %>%
+  mutate(mod_res = map(data, ~lm(log_max ~ age_mid, .x)),
+         mean_trend = map_dbl(mod_res,
+                              ~ coefficients(.x) %>%
+                                pluck(2) %>% 
+                                exp() %>% 
+                                {(.-1)*100}),
+         lower_ci = map_dbl(mod_res, 
+                            ~ confint(.x) %>% 
+                              .[2, 1] %>% 
+                              exp() %>% 
+                              {(.-1)*100}), 
+         upper_ci = map_dbl(mod_res,
+                            ~ confint(.x) %>%
+                              .[2, 2] %>% 
+                              exp() %>% 
+                              {(.-1)*100}), 
+         p_value = map_dbl(mod_res, 
+                           ~ summary(.x) %>% 
+                             pluck(coefficients) %>% 
+                             .[2,4])) 
 
+
+# visualise it
 plot_2 <- dat_clean %>%
   mutate(log_max = log(max_size_m), 
          group = factor(group,
@@ -64,11 +92,17 @@ plot_2 <- dat_clean %>%
                             210, 66), 
              colour = "grey70", 
              linetype = "dashed") +
+  stat_smooth(aes(group = 1), 
+              geom = "line", 
+              method = "lm", 
+              se = FALSE, 
+              colour = "grey30", 
+              linewidth = 1) +
   stat_smooth(aes(colour = group), 
               geom = "line", 
               method = "lm", 
               se = FALSE, 
-              alpha = 0.6, 
+              alpha = 0.9, 
               linewidth = 0.5) +
   geom_point(aes(fill = group), 
              position = position_jitter(height = 0.1,
@@ -209,9 +243,9 @@ plot_4 <- dat_clean %>%
 
 plot_first <- plot_1 /
   plot_2 / 
-  (plot_3 +
-     inset_element(plot_4, 0.055, 0, 1, 0.3, 
-                   ignore_tag = TRUE)) +
+  plot_3 +
+     inset_element(plot_4, 0.065, 0, 1, 0.3, 
+                   ignore_tag = TRUE) +
   plot_annotation(tag_levels = "A")
 
 # save plot
