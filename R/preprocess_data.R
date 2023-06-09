@@ -66,8 +66,7 @@ late_stage_lookup <- dat_clean %>%
   distinct(late_epoch) %>% 
   drop_na() %>% 
   add_column(corrected_late_epoch = c("Maolingian", 
-                                      "Lower Cretaceous", 
-                                      "Lower Triassic"))
+                                      "Lower Cretaceous"))
 
 
 # same for early stages
@@ -79,8 +78,7 @@ early_stage_lookup <- dat_clean %>%
   filter(is.na(early_age)) %>% 
   distinct(early_epoch) %>% 
   drop_na() %>% 
-  add_column(corrected_early_epoch = c("Maolingian", 
-                                      "Lower Triassic")) 
+  add_column(corrected_early_epoch = c("Maolingian")) 
 
 
 # add ages
