@@ -44,25 +44,20 @@ plot_1 <- dat_plot_1 %>%
                    yend = clade),
                colour = "grey70") +
   geom_point(aes(size = max_size, 
-                 fill = group, 
-                 colour = late_era), 
-             shape = 21, 
-             stroke = 1) +
-  scale_fill_brewer(type = "qual",
-                      palette = 2,
-                      name = NULL) +
+                 colour = group)) +
   labs(y = NULL, 
        x = "Taxon count", 
        size = "Maximum size [m]", 
-       fill = NULL, 
        colour = NULL) +
-  guides(fill = guide_legend(override.aes = list(stroke = 0, 
-                                                 size = 3.5)), 
-         colour = guide_legend(override.aes = list(size = 3))) +
+  scale_colour_brewer(type = "qual",
+                      palette = 2,
+                      name = NULL) +
   scale_size_continuous(breaks = c(1, 10, 20), 
                         range = c(1, 6)) +
-  scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
-  theme_classic(base_size = 12)
+  scale_y_discrete(expand = expansion(add = c(1, 1))) +
+  guides(colour = guide_legend(override.aes = list(size = 3.5)), 
+         size = guide_legend(override.aes = list(shape = 21))) +
+  theme_classic(base_size = 12) 
   
   
 
@@ -91,19 +86,27 @@ plot_2 <- dat_clean %>%
              fill = group, 
              colour = early_era)) +
   geom_point(shape = 21, 
-             alpha = 0.8, 
              stroke = 1) +
-  scale_colour_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+  labs(x = "Occurrence",
+       size = "Maximum size [m]",
+       colour = NULL, 
+       y = NULL) +
+  scale_x_discrete(labels = c("P", "M", "C")) +
+  scale_y_discrete(expand = expansion(add = c(1, 1))) +
+  scale_colour_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9")), 
+                      labels = c("Paleozoic [P]", 
+                                 "Mesozoic [M]",
+                                 "Cenozoic [C]")) +
   scale_fill_brewer(type = "qual",
                     palette = 2,
-                    name = NULL) +
-  scale_size_continuous(range = c(-1, 6)) +
-  labs(x = "Occurrence", 
-       y = NULL) +
+                    name = NULL, 
+                    guide = "none") +
+  scale_size_continuous(range = c(-1, 6), 
+                        guide = "none") +
+  guides(colour = guide_legend(override.aes = list(size = 3.5))) +
   theme_minimal(base_size = 12) +
   theme(panel.grid= element_blank(), 
-        axis.text = element_blank(),
-        legend.position = "none")
+        axis.text.y = element_blank())
 
 
 # save --------------------------------------------------------------------
