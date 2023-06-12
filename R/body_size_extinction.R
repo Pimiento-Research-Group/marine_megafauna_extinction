@@ -14,7 +14,7 @@ dat_clean <- read_rds(here("data",
                            "megafauna_clean.rds"))
 
 # stage information
-data("stages")
+data("stages", package = "divDyn")
 
 # table with keys to link stage information
 data("keys")
