@@ -17,7 +17,6 @@ data(stages, package = "divDyn")
 
 plot_1 <- dat_clean %>%
   count(group, vertical, habitat, guild) %>% 
-  drop_na() %>% 
   mutate(group = factor(group, 
                         levels = c("Invert", 
                                    "Fish", 
@@ -60,7 +59,6 @@ plot_1 <- dat_clean %>%
 
 plot_2 <- dat_clean %>% 
   count(early_era, vertical, habitat, guild) %>% 
-  drop_na() %>% 
   ggplot(aes(vertical, habitat, 
              shape = guild, 
              size = n, 
@@ -85,37 +83,37 @@ plot_2 <- dat_clean %>%
 
 
 
-# per group through time --------------------------------------------------
-
-dat_clean %>% 
-  group_by(early_era, group) %>% 
-  count(vertical) %>% 
-  drop_na()  %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) %>% 
-  ggplot(aes(vertical, n, 
-             fill = group, 
-             group = early_era)) +
-  # geom_point() +
-  # geom_line() +
-  geom_point(position = position_dodge(width = 0.4), 
-             shape = 21, 
-             size = 3, 
-             stroke = 1, 
-             alpha = 0.8) +
-  scale_fill_brewer(type = "qual",
-                    palette = 2,
-                    name = NULL) +
-  scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
-  facet_wrap(~early_era) +
-  theme_classic() 
-
-
+# # per group through time --------------------------------------------------
+# 
+# dat_clean %>% 
+#   group_by(early_era, group) %>% 
+#   count(vertical) %>% 
+#   drop_na()  %>% 
+#   mutate(group = factor(group, 
+#                         levels = c("Invert", 
+#                                    "Fish", 
+#                                    "Chondrichthyes", 
+#                                    "Reptile", 
+#                                    "Bird", 
+#                                    "Mammal"))) %>% 
+#   ggplot(aes(vertical, n, 
+#              fill = group, 
+#              group = early_era)) +
+#   # geom_point() +
+#   # geom_line() +
+#   geom_point(position = position_dodge(width = 0.4), 
+#              shape = 21, 
+#              size = 3, 
+#              stroke = 1, 
+#              alpha = 0.8) +
+#   scale_fill_brewer(type = "qual",
+#                     palette = 2,
+#                     name = NULL) +
+#   scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+#   facet_wrap(~early_era) +
+#   theme_classic() 
+# 
+# 
 
 
 
@@ -137,8 +135,8 @@ ggsave(plot_final, filename = here("figures",
 
 dat_clean %>%
   count(group, vertical, habitat, guild) %>% 
-  drop_na() %>% 
-  filter(group == "Bird")
+  # drop_na() %>% 
+  filter(group == "Reptile")
   mutate(group = factor(group, 
                         levels = c("Invert", 
                                    "Fish", 
