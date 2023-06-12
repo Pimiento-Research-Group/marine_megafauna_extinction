@@ -23,18 +23,31 @@ plot_1 <- dat_clean %>%
                                    "Chondrichthyes", 
                                    "Reptile", 
                                    "Bird", 
-                                   "Mammal"))) %>% 
+                                   "Mammal")), 
+         across(c(vertical, habitat, guild),
+                as.character)) %>% 
+  replace_na(list(vertical = "Missing", 
+                  habitat = "Missing", 
+                  guild = "Missing")) %>% 
+  mutate(across(c(vertical, habitat, guild), 
+                ~ fct_relevel(.x, 
+                              "Missing", 
+                              after = 3)), 
+         guild = fct_relevel(guild, 
+                             "Micropredator", 
+                             after = 1)) %>% 
   ggplot(aes(vertical, habitat, 
              shape = guild, 
              size = n, 
              colour = group)) +
   geom_point() +
-  scale_shape_manual(values = c(0, 1, 2)) +
+  scale_shape_manual(values = c(0, 1, 2, 4)) +
   scale_size_continuous(range = c(1, 9), 
                         breaks = c(1, 10, 20, 30)) +
   scale_colour_brewer(type = "qual",
                       palette = 2,
                       name = NULL) +
+  scale_y_discrete(expand = expansion(add = c(1, 1))) +
   labs(x = NULL, 
        y = NULL, 
        size = NULL, 
@@ -57,14 +70,26 @@ plot_1 <- dat_clean %>%
 # and through time --------------------------------------------------------
 
 
-plot_2 <- dat_clean %>% 
+plot_2 <- dat_clean %>%
   count(early_era, vertical, habitat, guild) %>% 
+  mutate(across(c(vertical, habitat, guild),
+         as.character)) %>% 
+  replace_na(list(vertical = "Missing", 
+                  habitat = "Missing", 
+                  guild = "Missing")) %>% 
+  mutate(across(c(vertical, habitat, guild), 
+                ~ fct_relevel(.x, 
+                              "Missing", 
+                              after = 3)), 
+         guild = fct_relevel(guild, 
+                             "Micropredator", 
+                             after = 1)) %>% 
   ggplot(aes(vertical, habitat, 
              shape = guild, 
              size = n, 
              colour = early_era)) +
   geom_point() +
-  scale_shape_manual(values = c(0, 1, 2)) +
+  scale_shape_manual(values = c(0, 1, 2, 4)) +
   scale_colour_manual(values = rev(c(colorspace::darken("#fcea10", 0.1),
                                      "#5dc5ea", "#a9c6a9"))) +
   labs(x = NULL, 
