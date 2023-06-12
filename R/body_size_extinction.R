@@ -4,6 +4,7 @@ library(divDyn)
 library(brms)
 library(tidybayes)
 library(patchwork)
+library(deeptime)
 
 # read data ---------------------------------------------------------------
 
@@ -289,7 +290,10 @@ dat_logit <- dat_pbdb_binned %>%
 
 # visualize
 plot_logit <- dat_logit %>%
-  ggplot(aes(bin_occ, logit)) +
+  # add age
+  left_join(stages %>% 
+              select(bin_occ = stg, age = mid)) %>% 
+  ggplot(aes(age, logit)) +
   geom_hline(yintercept = 0) +
   geom_line(aes(colour = group, 
                 group = paste(group, .draw)), 
@@ -303,40 +307,51 @@ plot_logit <- dat_logit %>%
                 colour = group), 
             linewidth = 0.8) +
   annotate(geom = "curve",
-           x = 9, xend = 9,
-           y = 0.1, yend = 1.3,
+           x = 490, xend = 490,
+           y = 0.1, yend = 0.8,
            curvature = 0,
            colour = "grey70",
            arrow = arrow(length = unit(.2,"cm"))) +
   annotate(geom = "label", 
-           x = 9, y = 2, label = "Higher risk\nfor baseline", 
+           x = 490, y = 1.3, label = "Higher risk\nfor baseline", 
            colour = "grey30", 
            size = 8/.pt, 
            label.size = 0) +
   annotate(geom = "curve",
-           x = 9, xend = 9,
-           y = -0.1, yend = -1.3,
+           x = 490, xend = 490,
+           y = -0.1, yend = -0.8,
            curvature = 0,
            colour = "grey70",
            arrow = arrow(length = unit(.2,"cm"))) +
   annotate(geom = "label", 
-           x = 9, y = -2, label = "Higher risk\nfor megafauna", 
+           x = 490, y = -1.3, label = "Higher risk\nfor megafauna", 
            colour = "grey30", 
            size = 8/.pt, 
            label.size = 0) +
-  scale_x_continuous(breaks = c(4, 51, 81, 95), 
-                     labels =  round(stages$mid[c(4, 51, 81, 95)], 0), 
-                     name = "Age [myr]", 
-                     limits = c(4, 95)) +
+
   scale_color_brewer(type = "qual", 
                      palette = 2) +
   labs(colour = NULL, 
+       x = "Age [myr]",
        y = "Extinction Selectivity [logit]") +
-  theme_minimal() +
+  theme_classic(base_size = 12) +
   guides(colour = guide_legend(override.aes = list(alpha = 1), 
                                nrow = 1)) +
-  ylim(c(-2.2, 2)) +
-  theme(legend.position = "top")
+  coord_geo(xlim = c(0, 510), 
+            dat = list("periods", "eras"),
+            pos = list("b", "b"),
+            alpha = 0.2, 
+            height = unit(0.8, "line"), 
+            size = list(7/.pt, 10/.pt),
+            lab_color = "grey20", 
+            color = "grey20", 
+            abbrv = list(TRUE, FALSE), 
+            fill = "white",
+            expand = TRUE, 
+            lwd = list(0.4, 0.5)) +
+  scale_x_reverse() +
+  ylim(c(-1.7, 1.7)) +
+  theme(legend.position = "none")
 
 
 # save plot
@@ -349,35 +364,50 @@ ggsave(plot_logit, filename = here("figures",
 
 
 
-# add capture mark recapture ----------------------------------------------
+# # add capture mark recapture ----------------------------------------------
+# 
+# # read in sampling rate results from crm analysis
+# dat_crm <- read_rds(here("data",
+#                          "output",
+#                          "cmr_data.rds"))
+# 
+# # visualise
+# plot_crm <- dat_crm %>%
+#   mutate(group_id = str_to_title(group_id)) %>% 
+#   ggplot(aes(y = group_id, x = samp_inx)) +
+#   stat_halfeye() +
+#   theme_minimal(base_size = 12) +
+#   labs(y = NULL, 
+#        x = "Sampling completeness") +
+#   scale_x_continuous(breaks = c(0, 0.05, 0.1), 
+#                      limits = c(0, 0.13)) +
+#   theme(panel.grid = element_blank())
+# 
+# 
+# # patch together
+# plot_final <- plot_comp / 
+#   plot_crm +
+#   plot_layout(heights = c(4, 1)) +
+#   plot_annotation(tag_levels = "A")
+# 
+# # and save
+# ggsave(plot_final, filename = here("figures",
+#                                   "baseline_vs_megafauna.png"), 
+#        width = 183, height = 150,
+#        units = "mm", 
+#        bg = "white", device = ragg::agg_png)
 
-# read in sampling rate results from crm analysis
-dat_crm <- read_rds(here("data",
-                         "output",
-                         "cmr_data.rds"))
 
-# visualise
-plot_crm <- dat_crm %>%
-  mutate(group_id = str_to_title(group_id)) %>% 
-  ggplot(aes(y = group_id, x = samp_inx)) +
-  stat_halfeye() +
-  theme_minimal(base_size = 12) +
-  labs(y = NULL, 
-       x = "Sampling completeness") +
-  scale_x_continuous(breaks = c(0, 0.05, 0.1), 
-                     limits = c(0, 0.13)) +
-  theme(panel.grid = element_blank())
-
+# patch together ----------------------------------------------------------
 
 # patch together
-plot_final <- plot_comp / 
-  plot_crm +
-  plot_layout(heights = c(4, 1)) +
+plot_final <- plot_comp /
+  plot_logit +
   plot_annotation(tag_levels = "A")
 
 # and save
 ggsave(plot_final, filename = here("figures",
-                                  "baseline_vs_megafauna.png"), 
+                                   "baseline_vs_megafauna.png"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white", device = ragg::agg_png)
