@@ -15,7 +15,7 @@ dat_clean <- read_rds(here("data",
 # size per trait ----------------------------------------------------------
 
 # visualise
-plot_1 <- dat_clean %>% 
+plot_1 <- dat_clean %>%
   pivot_longer(cols = c(vertical, habitat, guild), 
                names_to = "eco_trait", 
                values_to = "eco_val") %>% 
@@ -26,7 +26,11 @@ plot_1 <- dat_clean %>%
                                    "Chondrichthyes", 
                                    "Reptile", 
                                    "Bird", 
-                                   "Mammal")), 
+                                   "Mammal")),
+         eco_val = factor(eco_val,
+                          levels = c("Herbivore", "Micropredator", "Macropredator", 
+                                     "Benthic", "Benthopelagic", "Pelagic", 
+                                     "Coastal", "Coastal/Oceanic", "Oceanic")), 
          age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>% 
   ggplot(aes(age_mid, log(max_size_m), 
              fill = group)) +
@@ -39,7 +43,10 @@ plot_1 <- dat_clean %>%
              alpha = 0.3, 
              size = 3) +
   coord_geo(xlim = c(0, 510), 
-            dat = list("eras"),
+            dat = tibble(name = c("Cenozoic", "Mesozoic", "Paleozoic"), 
+                         max_age = c(66, 251.9, 538.8), 
+                         min_age = c(0, 66, 251.9), 
+                         abbr = c("C", "M", "P")),
             pos = list("b"),
             alpha = 0.2, 
             height = unit(0.8, "line"), 
@@ -86,9 +93,9 @@ plot_2 <- dat_clean %>%
                                    "Bird", 
                                    "Mammal")), 
          eco_trait = factor(eco_trait, 
-                            levels = c("vertical", 
-                                       "habitat", 
-                                       "guild"))) %>% 
+                            levels = c("guild", 
+                                       "vertical", 
+                                       "habitat"))) %>% 
   ggplot(aes(n_perc, 
              eco_val, 
              fill = group)) +
