@@ -59,10 +59,12 @@ plot_1 <- dat_clean %>%
   scale_x_reverse() +
   theme_classic(base_size = 12) +
   guides(colour = guide_legend(nrow = 2,
-                               byrow = TRUE)) +
-  theme(legend.position = "none", 
+                               byrow = TRUE, 
+                               override.aes = list(alpha = 0.9))) +
+  theme(legend.position = c(0.3, 0.8), 
         axis.text.y = element_blank(), 
-        axis.ticks.y = element_blank())
+        axis.ticks.y = element_blank(),
+        legend.key.size = unit(3, "mm"))
 
 
 
