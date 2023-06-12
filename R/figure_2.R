@@ -43,7 +43,7 @@ plot_1 <- dat_clean %>%
                       palette = 2,
                       name = NULL) +
   scale_y_discrete(limits = rev, 
-                   expand = expansion(mult = c(0.08, 0))) +
+                   expand = expansion(mult = c(0.2, 0))) +
   coord_geo(xlim = c(0, 520), 
             dat = list("periods", "eras"),
             pos = list("b", "b"),
@@ -60,7 +60,7 @@ plot_1 <- dat_clean %>%
   theme_classic(base_size = 12) +
   guides(colour = guide_legend(nrow = 2,
                                byrow = TRUE)) +
-  theme(legend.position = c(0.3, 0.8), 
+  theme(legend.position = "none", 
         axis.text.y = element_blank(), 
         axis.ticks.y = element_blank())
 
@@ -70,14 +70,14 @@ plot_1 <- dat_clean %>%
 
 plot_2 <- dat_clean %>%
   mutate(early_epoch = factor(early_epoch, levels = stages %>% 
-                                 distinct(series) %>% 
-                                 pull)) %>% 
+                                distinct(series) %>% 
+                                pull)) %>% 
   count(early_epoch, name = "FAD") %>% 
   mutate(FAD = FAD/sum(FAD) * 100) %>% 
   full_join(dat_clean %>% 
               mutate(late_epoch = factor(late_epoch, levels = stages %>% 
-                                            distinct(series) %>% 
-                                            pull)) %>% 
+                                           distinct(series) %>% 
+                                           pull)) %>% 
               count(late_epoch, name = "LAD") %>% 
               rename(early_epoch = late_epoch)) %>% 
   drop_na() %>% 
@@ -90,38 +90,121 @@ plot_2 <- dat_clean %>%
   pivot_longer(cols = c(LAD, FAD)) %>% 
   ggplot(aes(mid_age, value, 
              fill = name)) + 
-  geom_col(position = position_dodge(), 
-           alpha = 0.5, 
-           width = 10) +
+  geom_col(position = position_dodge(width = 5), 
+           # alpha = 0.5, 
+           width = 7) +
   scale_fill_manual(values = c("#4A7971",
                                "#CB8387"),
                     name = NULL) +
   scale_x_reverse() +
-  scale_y_continuous(breaks = c(0, 10, 20), 
-                     labels = paste0(c(0, 10, 20), "%"), 
+  scale_y_continuous(breaks = c(0, 10, 20),
+                     labels = paste0(c(0, 10, 20), "%"),
                      position = "right") +
   coord_cartesian(expand = FALSE) +
   theme_classic(base_size = 8) +
   labs(y = NULL, 
        x = NULL) +
-  theme(legend.position = c(0.05, 0.6), 
-        legend.key.size = unit(2, "mm"), 
+  theme(legend.position = c(0.97, 1.5),
+        legend.key.size = unit(2, "mm"),
         axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(), 
+        axis.ticks.x = element_blank(),
         axis.line.x = element_blank(),
+        legend.background = element_rect(fill = 'transparent', color = NA),
         panel.background = element_rect(fill = 'transparent'),
-        plot.background = element_rect(fill = 'transparent', color = NA))
+        plot.background = element_rect(fill = 'transparent', color = NA)) 
+
+
+
+
+# taxa counts -------------------------------------------------------------
+
+
+# count taxa per group (and Era)
+plot_3 <- dat_clean %>%
+  count(group, late_era) %>% 
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal"))) %>% 
+  ggplot(aes(n, group)) +
+  geom_segment(aes(xend = 0,
+                   yend = group, 
+                   colour = group),
+               position = position_dodge2(width = 0.9), 
+               alpha = 0.5, 
+               linewidth = 0.4) +
+  geom_point(aes(colour = group, 
+                 fill = late_era), 
+             size = 5, 
+             shape = 21,
+             position = position_dodge(width = 0.9)) +
+  scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+  scale_colour_brewer(type = "qual",
+                      palette = 2,
+                      name = NULL, 
+                      guide = "none") +
+  scale_y_discrete(expand = expansion(add = c(1, 1))) +
+  guides(fill = guide_legend(override.aes = list(size = 3, 
+                                                 stroke = 0))) +
+  labs(y = NULL, 
+       x = "Taxon count", 
+       fill = NULL) +
+  theme_classic(base_size = 12) +
+  theme(legend.position = "top", 
+        legend.text = element_text(size = 8, 
+                                   margin = margin(r = 0, unit = "pt")))
+
+
+
+# alternative for b -------------------------------------------------------
+
+plot_4 <- dat_clean %>%
+  mutate(group = factor(group, 
+                        levels = c("Invert", 
+                                   "Fish", 
+                                   "Chondrichthyes", 
+                                   "Reptile", 
+                                   "Bird", 
+                                   "Mammal"))) %>% 
+  ggplot(aes(group)) +
+  geom_bar(aes(fill = late_era), 
+           position = position_dodge(), 
+           width = 0.8) +
+  scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+  scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+  labs(y = "Taxon count", 
+       x = NULL, 
+       fill = NULL) +
+  theme_classic(base_size = 12) +
+  theme(legend.position = "top", 
+        legend.key.size = unit(2, "mm"))
 
 
 # patch together ----------------------------------------------------------
 
 
-plot_second <- plot_1 +
-  inset_element(plot_2, 0.05, 0, 1, 0.3)
+# plot_final <- plot_1 +
+#   inset_element(plot_2, 0.065, 0, 1, 0.3, 
+#                 ignore_tag = TRUE) +
+#   plot_3 +
+#   plot_annotation(tag_levels = "A")  +
+#   plot_layout(heights = c(2, 1))
   
+
+plot_final <- plot_4 +
+  plot_1 +
+  inset_element(plot_2, 0.065, 0, 1, 0.3, 
+                ignore_tag = TRUE) +
+  plot_annotation(tag_levels = "A")  +
+  plot_layout(heights = c(1, 2))
+
+
 # save plot
-ggsave(plot_second, filename = here("figures",
+ggsave(plot_final, filename = here("figures",
                                    "figure_2.png"), 
-       width = 183, height = 100,
+       width = 183, height = 150,
        units = "mm", 
        bg = "white", device = ragg::agg_png)     
