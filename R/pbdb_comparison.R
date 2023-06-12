@@ -190,6 +190,13 @@ dat_pbdb <- pbdb_data %>%
   bind_rows()
 
 
+# save 
+write_rds(dat_pbdb, 
+          here("data", 
+               "output", 
+               "pbdb_data_clean.rds"), 
+          compress = "gz")
+
 
 # occurrences per taxon ---------------------------------------------------
 
