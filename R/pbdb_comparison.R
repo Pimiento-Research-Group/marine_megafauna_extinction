@@ -190,12 +190,6 @@ dat_pbdb <- pbdb_data %>%
   bind_rows()
 
 
-# save 
-write_rds(dat_pbdb, 
-          here("data", 
-               "output", 
-               "pbdb_data_clean.rds"), 
-          compress = "gz")
 
 
 # occurrences per taxon ---------------------------------------------------
@@ -220,9 +214,22 @@ nr_occ <- map_int(tax_names_clean$taxon_clean,
                  accepted_name_clean == .x) %>%
           nrow())  
 
-dat_occ <- tibble(taxon = tax_names_clean$taxon_clean,
+dat_occ <- tibble(taxon = as_factor(tax_names_clean$taxon_clean),
                   occurrences = nr_occ, 
-                  synonym = tax_names_clean$identified_name_clean) 
+                  synonym = tax_names_clean$identified_name_clean) %>%
+  mutate(taxa = coalesce(synonym, taxon))%>%
+  left_join(dat_clean %>%
+              select(taxa, group, clade, late_era),
+            by = c("taxa")) %>%
+  mutate(log_occ = log1p(occurrences))
+
+# save 
+write_rds(dat_occ, 
+          here("data", 
+               "output", 
+               "pbdb_data_clean.rds"), 
+          compress = "gz")
+
 
 dat_occ %>% 
   drop_na(synonym)
