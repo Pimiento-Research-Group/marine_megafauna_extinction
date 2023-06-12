@@ -50,7 +50,6 @@ plot_1 <- dat_hist %>%
   labs(x = "# Occurrences", y = paste0("Taxa (n = ", 
                                        dat_occ %>%
                                          filter(occurrences > 0) %>%
-                                         distinct() %>%
                                          nrow(), ")")) +
   scale_x_continuous(breaks = c(0, seq(log1p(1), log1p(300),
                                        by = log1p(1))),
