@@ -60,10 +60,11 @@ pbdb_data_raw <- map(url_list, ~read_tsv(file = .x,
                      .progress = TRUE)
 
 # save download
-write_rds(pbdb_data_raw, here("data",
-                              "output",
-                              "pbdb_data_raw.rds"),
-          compress = "gz")
+pbdb_data_raw %>% 
+  write_rds(here("data",
+                 "output",
+                 "pbdb_data_raw.rds"),
+            compress = "gz")
 
 # read in download
 pbdb_data_raw <- read_rds(here("data",
@@ -131,6 +132,12 @@ synon_names <- pbdb_data %>%
   filter(accepted_name_clean != word(identified_name_clean, 1)) %>% 
   select(-identified_name)
 
+# save
+synon_names %>% 
+  distinct() %>% 
+  write_csv(here("data", 
+                 "output", 
+                 "synonym_list.csv"))
 
 # get vector with accepted names
 pbdbd_names <- pbdb_data %>% 
