@@ -33,11 +33,13 @@ dat_clean <- dat_raw %>%
                                       "Birds", "Mammals")), 
          group = fct_recode(group,
                             "Non-avian Reptiles" = "Non-avian reptiles", 
-                            "Bony Fishes" = "Bony_fishes"),
+                            "Bony Fishes" = "Bony_fishes", 
+                            "\"Agnatha\"" = "Agnatha", 
+                            "\"Placodermi\"" = "Placodermi"),
          group_clps = fct_collapse(group,
                                    Fishes = c("Bony Fishes",
-                                             "Agnatha",
-                                             "Placodermi"))) %>%
+                                              "\"Agnatha\"",
+                                              "\"Placodermi\""))) %>%
   mutate(early_era = fct_relevel(early_era,
                                  c("Paleozoic", "Mesozoic", "Cenozoic"))) %>%
   mutate(late_era = fct_relevel(late_era,
