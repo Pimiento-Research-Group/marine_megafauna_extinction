@@ -32,11 +32,11 @@ dat_clean <- dat_raw %>%
                                       "Chondrichthyes", "Non-avian reptiles", 
                                       "Birds", "Mammals")), 
          group = fct_recode(group,
-                            "Bony Fishes" = "Bony_fishes", 
+                            "Bony fishes" = "Bony_fishes", 
                             "\"Agnatha\"" = "Agnatha", 
                             "\"Placodermi\"" = "Placodermi"),
          group_clps = fct_collapse(group,
-                                   Fishes = c("Bony Fishes",
+                                   Fishes = c("Bony fishes",
                                               "\"Agnatha\"",
                                               "\"Placodermi\""))) %>%
   mutate(early_era = fct_relevel(early_era,
