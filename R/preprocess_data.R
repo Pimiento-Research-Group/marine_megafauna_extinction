@@ -32,7 +32,6 @@ dat_clean <- dat_raw %>%
                                       "Chondrichthyes", "Non-avian reptiles", 
                                       "Birds", "Mammals")), 
          group = fct_recode(group,
-                            "Non-avian Reptiles" = "Non-avian reptiles", 
                             "Bony Fishes" = "Bony_fishes", 
                             "\"Agnatha\"" = "Agnatha", 
                             "\"Placodermi\"" = "Placodermi"),
