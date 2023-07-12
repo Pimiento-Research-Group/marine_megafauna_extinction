@@ -139,18 +139,18 @@ plot_2 <- dat_clean %>%
                      labels = c(1, 2, 5, 10, 20)) +
   labs(y = "Maximum body size [m]", 
        x = "Age [myr]") +
-  coord_geo(xlim = c(0, 510), 
-            dat = list("periods", "eras"),
-            pos = list("b", "b"),
-            alpha = 0.2, 
-            height = unit(0.8, "line"), 
-            size = list(7/.pt, 10/.pt),
-            lab_color = "grey20", 
-            color = "grey20", 
-            abbrv = list(TRUE, FALSE), 
-            fill = "white",
-            expand = TRUE, 
-            lwd = list(0.4, 0.5)) +
+  # coord_geo(xlim = c(0, 510), 
+  #           dat = list("periods", "eras"),
+  #           pos = list("b", "b"),
+  #           alpha = 0.2, 
+  #           height = unit(0.8, "line"), 
+  #           size = list(7/.pt, 10/.pt),
+  #           lab_color = "grey20", 
+  #           color = "grey20", 
+  #           abbrv = list(TRUE, FALSE), 
+  #           fill = "white",
+  #           expand = TRUE, 
+  #           lwd = list(0.4, 0.5)) +
   scale_x_reverse() +
   theme_classic(base_size = 12) +
   theme(legend.position = "none") 
@@ -161,18 +161,13 @@ plot_3 <- dat_clean %>%
   mutate(log_max = log(max_size_m)) %>% 
   # plot at the mid points of epochs
   mutate(age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>%
-  # add linetype id
-  left_join(dat_trend %>% 
-              select(group, p_star) %>% 
-              mutate(p_star = if_else(p_star != "ns", "is_sign", "ns"))) %>% 
   ggplot(aes(x = age_mid, 
              y = log_max)) +
   geom_vline(xintercept = c(443, 365, 252, 
                             210, 66), 
              colour = "grey70", 
              linetype = "dashed") +
-  stat_smooth(aes(colour = group, 
-                  linetype = p_star),
+  stat_smooth(aes(colour = group),
             geom = "line",
             method = "lm",
             se = FALSE,
