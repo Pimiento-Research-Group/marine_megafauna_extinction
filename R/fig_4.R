@@ -153,7 +153,7 @@ plot_final <- plot_1 / plot_2 +
 # save plot
 ggsave(plot_final, 
        filename = here("figures",
-                       "fig_4.pdf"), 
+                       "figure_4.pdf"), 
        width = 183, height = 180,
        units = "mm", 
        bg = "white")  

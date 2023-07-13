@@ -172,13 +172,10 @@ dat_comp <- tibble(group_id = unique(dat_pbdb_binned$group_id)) %>%
                   ndraws = 1000) %>% 
   group_by(group, group_id) %>% 
   median_qi(.epred) %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) 
+  mutate(group = fct_relevel(group, c("Invertebrates", "Bony fishes", 
+                                       "Placoderms",
+                                      "Chondrichthyans", "Non-avian reptiles", 
+                                      "Birds", "Mammals")))
 
 # differences
 dat_comp %>% 
@@ -197,12 +194,14 @@ plot_comp <- dat_comp %>%
   geom_linerange(aes(ymin = .lower, 
                       ymax = .upper), 
                   position = position_dodge(width = 0.3), 
-                 linewidth = 1) +
+                 linewidth = 1, 
+                 show.legend = FALSE, 
+                 alpha = 0.7) +
   geom_point(aes(fill = group), 
              colour = "grey20", 
              position = position_dodge(width = 0.3), 
              shape = 21, 
-             size = 4) +
+             size = 3) +
   scale_y_continuous(name = "Extinction Risk [%]", 
                      breaks = seq(0, 1, by = 0.2), 
                      labels = seq(0, 1, by = 0.2)*100, 
@@ -211,25 +210,35 @@ plot_comp <- dat_comp %>%
                    labels = c("Baseline", "Megafauna")) +
   guides(colour = guide_legend(nrow = 2, byrow = TRUE), 
          fill = guide_legend(nrow = 2, byrow = TRUE, 
-                             override.aes = list(size = 2))) +
-  scale_color_brewer(type = "qual", 
-                     palette = 2) +
-  scale_fill_brewer(type = "qual", 
-                     palette = 2) +
-  labs(colour = NULL, 
-       fill = NULL) +
+                             override.aes = list(size = 3.5, 
+                                                 stroke = 0))) +
+  scale_color_manual(values = c("#1e728eff",
+                                "#ffbc3cff",
+                                "coral3",
+                                "#5d7a64ff",
+                                "#ad6d8aff",
+                                "#6d3f2fff",
+                                "#f9938eff"),
+                     name = NULL) +
+  scale_fill_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
+                    name = NULL) +
   theme_classic(base_size = 12) +
-  theme(legend.position = c(0.3, 0.85), 
-        legend.background = element_rect(colour = "grey30", 
-                                         linewidth = 0.3))
+  theme(legend.position = c(0.5, 0.85), 
+        legend.key.size = unit(4, "mm"))
 
 
-# save plot
-ggsave(plot_comp, filename = here("figures",
-                                  "baseline_vs_megafauna.png"), 
-       width = 183, height = 100,
-       units = "mm", 
-       bg = "white", device = ragg::agg_png)
+# # save plot
+# ggsave(plot_comp, filename = here("figures",
+#                                   "baseline_vs_megafauna.png"), 
+#        width = 183, height = 100,
+#        units = "mm", 
+#        bg = "white", device = ragg::agg_png)
 
 
 # model temporal ----------------------------------------------------------
@@ -280,13 +289,12 @@ dat_logit <- dat_pbdb_binned %>%
   group_by(group, bin_occ) %>% 
   mutate(.draw = 1:n(), 
          mean_logit = mean(logit)) %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal")))  
+  ungroup() %>% 
+  ungroup() %>% 
+  mutate(group = fct_relevel(group, c("Invertebrates", "Bony fishes", 
+                                      "Placoderms",
+                                      "Chondrichthyans", "Non-avian reptiles", 
+                                      "Birds", "Mammals")))
 
 # visualize
 plot_logit <- dat_logit %>%
@@ -329,8 +337,14 @@ plot_logit <- dat_logit %>%
            size = 8/.pt, 
            label.size = 0) +
 
-  scale_color_brewer(type = "qual", 
-                     palette = 2) +
+  scale_color_manual(values = c("#1e728eff",
+                                "#ffbc3cff",
+                                "coral3",
+                                "#5d7a64ff",
+                                "#ad6d8aff",
+                                "#6d3f2fff",
+                                "#f9938eff"),
+                     name = NULL) +
   labs(colour = NULL, 
        x = "Age [myr]",
        y = "Extinction Selectivity [logit]") +
@@ -354,12 +368,12 @@ plot_logit <- dat_logit %>%
   theme(legend.position = "none")
 
 
-# save plot
-ggsave(plot_logit, filename = here("figures",
-                                   "logit_through_time.png"), 
-       width = 183, height = 100,
-       units = "mm", 
-       bg = "white", device = ragg::agg_png)
+# # save plot
+# ggsave(plot_logit, filename = here("figures",
+#                                    "logit_through_time.png"), 
+#        width = 183, height = 100,
+#        units = "mm", 
+#        bg = "white", device = ragg::agg_png)
 
 
 
@@ -406,8 +420,9 @@ plot_final <- plot_comp /
   plot_annotation(tag_levels = "A")
 
 # and save
-ggsave(plot_final, filename = here("figures",
-                                   "baseline_vs_megafauna.png"), 
+ggsave(plot_final, 
+       filename = here("figures",
+                       "figure_7.pdf"), 
        width = 183, height = 150,
        units = "mm", 
-       bg = "white", device = ragg::agg_png)
+       bg = "white")
