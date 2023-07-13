@@ -237,9 +237,42 @@ write_rds(dat_occ,
                "pbdb_data_clean.rds"), 
           compress = "gz")
 
+# create nice overview table
+dat_occ %>% 
+  mutate(is_occ = if_else(occurrences > 0, 
+                          "yes", 
+                          "no")) %>% 
+  group_by(group) %>% 
+  count(is_occ) %>% 
+  pivot_wider(names_from = is_occ, 
+              values_from = n) %>% 
+  mutate(no = replace_na(no, 0), 
+         prop_has_occ = yes/(no+yes)) %>% 
+  ungroup() %>% 
+  select(group, prop_has_occ) %>% 
+  left_join(dat_occ %>% 
+              filter(occurrences > 0) %>% 
+              count(group, 
+                    name = "number_of_taxa_with_occ")) %>% 
+  left_join(dat_occ %>% 
+              filter(occurrences > 0) %>% 
+              mutate(is_singleton = if_else(occurrences == 1,
+                                            "yes",
+                                            "no")) %>% 
+              group_by(group) %>% 
+              count(is_singleton) %>% 
+              pivot_wider(names_from = is_singleton, 
+                          values_from = n) %>% 
+              mutate(yes = replace_na(yes, 0), 
+                     prop_singletons = yes/(no+yes)) %>% 
+              ungroup() %>% 
+              select(group, number_of_singletons = yes, prop_singletons))
+
 
 dat_occ %>% 
-  drop_na(synonym)
+  filter(occurrences > 0) %>% 
+  filter(group == "Jawless fishes")
+  
 
 # how many species have more than one occurrence
 dat_occ %>% 
