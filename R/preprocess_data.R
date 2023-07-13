@@ -24,10 +24,20 @@ data(stages,
 # clean up ----------------------------------------------------------------
 
 # reformat 
-dat_clean <- dat_raw %>% 
+dat_clean <- dat_raw %>%
   rename_with(tolower) %>% 
   mutate_if(is.character, as.factor) %>%
-  mutate(group = fct_relevel(group, c("Invert", "Fish", "Chondrichthyes", "Reptile", "Bird", "Mammal"))) %>%
+  mutate(group = fct_relevel(group, c("Invertebrates", "Bony_fishes", 
+                                      "Jawless_fishes", "Placoderms",
+                                      "Chondrichthyans", "Non-avian reptiles", 
+                                      "Birds", "Mammals")), 
+         group = fct_recode(group,
+                            "Bony fishes" = "Bony_fishes", 
+                            "Jawless fishes" = "Jawless_fishes"),
+         group_clps = fct_collapse(group,
+                                   Fishes = c("Bony fishes",
+                                              "Jawless fishes",
+                                              "Placoderms"))) %>%
   mutate(early_era = fct_relevel(early_era,
                                  c("Paleozoic", "Mesozoic", "Cenozoic"))) %>%
   mutate(late_era = fct_relevel(late_era,

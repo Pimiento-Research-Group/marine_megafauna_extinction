@@ -2,6 +2,7 @@ library(here)
 library(tidyverse)
 library(patchwork)
 library(deeptime)
+library(ggridges)
 
 # read data ---------------------------------------------------------------
 
@@ -19,13 +20,6 @@ data(stages, package = "divDyn")
 # visualise
 plot_1 <- dat_clean %>%
   mutate(taxa = fct_reorder(taxa, age_early_epoch)) %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) %>% 
   ggplot(aes(y = taxa, 
              colour = group)) +
   geom_vline(xintercept = c(443, 365, 252, 
@@ -39,32 +33,40 @@ plot_1 <- dat_clean %>%
                  alpha = 0.5) +
   labs(y = "Taxon ranges", 
        x = "Age [myr]") +
-  scale_colour_brewer(type = "qual",
-                      palette = 2,
-                      name = NULL) +
+  scale_color_manual(values = c("#1e728eff",
+                                "#ffbc3cff",
+                                "#FF8454", 
+                                "coral3",
+                                "#5d7a64ff",
+                                "#ad6d8aff",
+                                "#6d3f2fff",
+                                "#f9938eff"),
+                     name = NULL) +
   scale_y_discrete(limits = rev, 
                    expand = expansion(mult = c(0.2, 0))) +
-  coord_geo(xlim = c(0, 520), 
+  coord_geo(xlim = c(0, 520),
             dat = list("periods", "eras"),
             pos = list("b", "b"),
-            alpha = 0.2, 
-            height = unit(0.8, "line"), 
+            alpha = 0.2,
+            height = unit(0.8, "line"),
             size = list(7/.pt, 10/.pt),
-            lab_color = "grey20", 
-            color = "grey20", 
-            abbrv = list(TRUE, FALSE), 
+            lab_color = "grey20",
+            color = "grey20",
+            abbrv = list(TRUE, FALSE),
             fill = "white",
-            expand = TRUE, 
+            expand = TRUE,
             lwd = list(0.4, 0.5)) +
   scale_x_reverse() +
   theme_classic(base_size = 12) +
   guides(colour = guide_legend(nrow = 2,
                                byrow = TRUE, 
                                override.aes = list(alpha = 0.9))) +
-  theme(legend.position = c(0.3, 0.8), 
+  theme(legend.position = "none", 
         axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(),
-        legend.key.size = unit(3, "mm"))
+        legend.key.size = unit(3, "mm"), 
+        legend.text = element_text(size = 10, 
+                                   colour = "grey30"))
 
 
 
@@ -124,13 +126,6 @@ plot_2 <- dat_clean %>%
 # count taxa per group (and Era)
 plot_3 <- dat_clean %>%
   count(group, late_era) %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) %>% 
   ggplot(aes(n, group)) +
   geom_segment(aes(xend = 0,
                    yend = group, 
@@ -164,16 +159,9 @@ plot_3 <- dat_clean %>%
 # alternative for b -------------------------------------------------------
 
 plot_4 <- dat_clean %>%
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) %>% 
   ggplot(aes(group)) +
   geom_bar(aes(fill = late_era), 
-           position = position_dodge(), 
+           # position = position_dodge(), 
            width = 0.8) +
   scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
   scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
@@ -182,8 +170,72 @@ plot_4 <- dat_clean %>%
        fill = NULL) +
   theme_classic(base_size = 12) +
   theme(legend.position = "top", 
-        legend.key.size = unit(2, "mm"))
+        legend.key.size = unit(2, "mm"), 
+        axis.text.x = element_text(size = 10, 
+                                   angle = 15, 
+                                   hjust = 0.5,
+                                   vjust = 0.6))
 
+
+# ranges per group --------------------------------------------------------
+
+plot_5 <- dat_clean %>%
+  mutate(group = fct_reorder(group, age_early_epoch)) %>% 
+  ggplot(aes(y = group, 
+             fill = group)) +
+  geom_vline(xintercept = c(443, 365, 252, 
+                            210, 66), 
+             colour = "grey70", 
+             linetype = "dashed") +
+  geom_density_ridges(aes(x = age_late_epoch), 
+                      colour = "white", 
+                      alpha = 0.85) + 
+  annotate("label",
+           label.size = 0, 
+           label.padding = unit(0.1, "lines"),
+           x = c(150, 240, 240, 490, 505, 360, 160, 130), 
+           y = c(1.8, 2, seq(3.1, 8.1, by = 1)),
+           colour = c("#1e728eff", 
+                      "#6d3f2fff", 
+                      "darkorange", 
+                      "#5d7a64ff", 
+                      "#ffbc3cff", 
+                      "#ad6d8aff", 
+                      "#6d3f2fff", 
+                      "#f9938eff"),
+           label = c("Invertebrates", 
+                     "Placoderms", 
+                     "Jawless fishes", 
+                     "Chondrichthyans", 
+                     "Bony fishes", 
+                     "Non-avian reptiles", 
+                     "Birds", 
+                     "Mammals"), 
+           size = 8/.pt) +
+  labs(y = "Taxon distributions", 
+       x = "Age [myr]") +
+  scale_fill_manual(values = c("#f9938eff", 
+                               "#6d3f2fff",
+                               "#ad6d8aff",
+                               "#ffbc3cff",
+                               "#5d7a64ff",
+                               "darkorange",
+                               "coral3",
+                               "#1e728eff"),
+                     name = NULL) +
+  scale_y_discrete(limits = rev, 
+                   expand = expansion(mult = c(0.05, 0.1))) +
+  scale_x_reverse(limits = c(520, 0)) + 
+  theme_classic(base_size = 12) +
+  guides(colour = guide_legend(nrow = 2,
+                               byrow = TRUE, 
+                               override.aes = list(alpha = 0.9))) +
+  theme(legend.position = "none", 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        legend.key.size = unit(3, "mm"), 
+        legend.text = element_text(size = 10, 
+                                   colour = "grey30"))
 
 # patch together ----------------------------------------------------------
 
@@ -196,17 +248,18 @@ plot_4 <- dat_clean %>%
 #   plot_layout(heights = c(2, 1))
   
 
-plot_final <- plot_4 +
+plot_final <- (plot_4 /
+                 plot_5 +
   plot_1 +
   inset_element(plot_2, 0.065, 0, 1, 0.3, 
-                ignore_tag = TRUE) +
+                ignore_tag = TRUE)) /
   plot_annotation(tag_levels = "A")  +
-  plot_layout(heights = c(1, 2))
+  plot_layout(heights = c(1, 2, 2))
 
 
 # save plot
 ggsave(plot_final, filename = here("figures",
-                                   "figure_2.png"), 
+                                   "figure_2.pdf"), 
        width = 183, height = 150,
        units = "mm", 
-       bg = "white", device = ragg::agg_png)     
+       bg = "white")     
