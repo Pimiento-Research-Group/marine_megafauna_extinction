@@ -17,14 +17,7 @@ data(stages, package = "divDyn")
 
 plot_1 <- dat_clean %>%
   count(group, vertical, habitat, guild) %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal")), 
-         across(c(vertical, habitat, guild),
+  mutate(across(c(vertical, habitat, guild),
                 as.character)) %>% 
   replace_na(list(vertical = "Missing", 
                   habitat = "Missing", 
@@ -43,10 +36,16 @@ plot_1 <- dat_clean %>%
   geom_point() +
   scale_shape_manual(values = c(0, 1, 2, 4)) +
   scale_size_continuous(range = c(1, 9), 
-                        breaks = c(1, 10, 20, 30)) +
-  scale_colour_brewer(type = "qual",
-                      palette = 2,
-                      name = NULL) +
+                        breaks = c(1, 15, 30)) +
+  scale_color_manual(values = c("#1e728eff",
+                                "#ffbc3cff",
+                                "darkorange", 
+                                "coral3",
+                                "#5d7a64ff",
+                                "#ad6d8aff",
+                                "#6d3f2fff",
+                                "#f9938eff"),
+                     name = NULL) +
   scale_y_discrete(expand = expansion(add = c(1, 1))) +
   labs(x = NULL, 
        y = NULL, 
@@ -55,11 +54,12 @@ plot_1 <- dat_clean %>%
   guides(colour = "none",
          size = guide_legend(
            override.aes = list(shape = 3))) +
-  facet_wrap(~ group) +
+  facet_wrap(~ group, 
+             ncol = 4) +
   theme_minimal(base_size = 12) +
   theme(legend.position = "bottom", 
         legend.spacing.x = unit(1, 'mm'), 
-        axis.text.x = element_text(angle = 18,
+        axis.text.x = element_text(angle = 28,
                                    vjust = 0.98,
                                    hjust = 0.85), 
         strip.background = element_rect(linewidth = 1), 
@@ -151,48 +151,11 @@ plot_final <- plot_1 / plot_2 +
   plot_annotation(tag_levels = "A")
 
 # save plot
-ggsave(plot_final, filename = here("figures",
-                                    "figure_3.png"), 
+ggsave(plot_final, 
+       filename = here("figures",
+                       "fig_4.pdf"), 
        width = 183, height = 180,
        units = "mm", 
-       bg = "white", device = ragg::agg_png)  
+       bg = "white")  
 
 
-dat_clean %>%
-  count(group, vertical, habitat, guild) %>% 
-  # drop_na() %>% 
-  filter(group == "Reptile")
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) %>% 
-  ggplot(aes(vertical, habitat, 
-             shape = guild, 
-             size = n, 
-             colour = group)) +
-  geom_point() +
-  scale_shape_manual(values = c(0, 1, 2)) +
-  scale_size_continuous(range = c(1, 9), 
-                        breaks = c(1, 10, 20, 30)) +
-  scale_colour_brewer(type = "qual",
-                      palette = 2,
-                      name = NULL) +
-  labs(x = NULL, 
-       y = NULL, 
-       size = NULL, 
-       shape = NULL) +
-  guides(colour = "none",
-         size = guide_legend(
-           override.aes = list(shape = 21))) +
-  facet_wrap(~ interaction(group, early_era)) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "bottom", 
-        legend.spacing.x = unit(1, 'mm'), 
-        axis.text.x = element_text(angle = 18,
-                                   vjust = 0.98,
-                                   hjust = 0.85), 
-        strip.background = element_rect(linewidth = 1), 
-        panel.grid.major = element_line(colour = "grey95"))

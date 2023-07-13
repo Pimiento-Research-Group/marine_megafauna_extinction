@@ -53,7 +53,7 @@ plot_1 <- dat_clean %>%
   scale_x_reverse() +
   scale_fill_manual(values = c("#1e728eff",
                                "#ffbc3cff",
-                               "#FF8454", 
+                               "darkorange", 
                                "coral3",
                                "#5d7a64ff",
                                "#ad6d8aff",
@@ -94,7 +94,7 @@ plot_2 <- dat_clean %>%
   geom_col(alpha = 0.9) +
   scale_fill_manual(values = c("#1e728eff",
                                "#ffbc3cff",
-                               "#FF8454", 
+                               "darkorange", 
                                "coral3",
                                "#5d7a64ff",
                                "#ad6d8aff",

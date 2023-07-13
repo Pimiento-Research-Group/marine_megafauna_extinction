@@ -26,7 +26,7 @@ plot_1 <- dat_clean %>%
        x = "Maximum body size [m]") +
   scale_color_manual(values = c("#1e728eff",
                                 "#ffbc3cff",
-                                "#FF8454", 
+                                "darkorange", 
                                 "coral3",
                                 "#5d7a64ff",
                                 "#ad6d8aff",
@@ -128,7 +128,7 @@ plot_2 <- dat_clean %>%
              colour = "grey30") +
   scale_fill_manual(values = c("#1e728eff",
                                "#ffbc3cff",
-                               "#FF8454", 
+                               "darkorange", 
                                "coral3",
                                "#5d7a64ff",
                                "#ad6d8aff",
