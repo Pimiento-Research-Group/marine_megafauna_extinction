@@ -14,7 +14,7 @@ dat_clean <- read_rds(here("data",
 # visualise ---------------------------------------------------------------
 
 
-dat_plot_1 <- dat_clean %>% 
+dat_plot_1 <- dat_clean %>%
   group_by(clade) %>% 
   summarise(max_size = max(max_size_m)) %>% 
   left_join(dat_clean %>% 
@@ -28,14 +28,7 @@ dat_plot_1 <- dat_clean %>%
               select(clade, late_era) %>% 
               distinct()) %>% 
   mutate(clade = fct_reorder(clade, interaction(n, group), 
-                             .fun = sort), 
-         group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal")))
+                             .fun = sort))
 
 # visualise
 plot_1 <- dat_plot_1 %>%
@@ -49,12 +42,19 @@ plot_1 <- dat_plot_1 %>%
        x = "Taxon count", 
        size = "Maximum size [m]", 
        colour = NULL) +
-  scale_colour_brewer(type = "qual",
-                      palette = 2,
+  scale_colour_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "darkorange", 
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
                       name = NULL) +
   scale_size_continuous(breaks = c(1, 10, 20), 
                         range = c(1, 6)) +
-  scale_y_discrete(expand = expansion(add = c(1, 1))) +
+  scale_y_discrete(expand = expansion(add = c(1, 1)), 
+                   limits = rev) +
   guides(colour = guide_legend(override.aes = list(size = 3.5)), 
          size = guide_legend(override.aes = list(shape = 21))) +
   theme_classic(base_size = 12) 
@@ -74,13 +74,7 @@ plot_2 <- dat_clean %>%
   mutate(clade = factor(clade, 
                         levels = levels(dat_plot_1$clade), 
                         ordered = TRUE), 
-         group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal"))) %>%
+         group = factor(group)) %>%
   ggplot(aes(early_era, clade,
              size = max_size, 
              fill = group, 
@@ -92,13 +86,20 @@ plot_2 <- dat_clean %>%
        colour = NULL, 
        y = NULL) +
   scale_x_discrete(labels = c("P", "M", "C")) +
-  scale_y_discrete(expand = expansion(add = c(1, 1))) +
+  scale_y_discrete(expand = expansion(add = c(1, 1)), 
+                   limits = rev) +
   scale_colour_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9")), 
                       labels = c("Paleozoic [P]", 
                                  "Mesozoic [M]",
                                  "Cenozoic [C]")) +
-  scale_fill_brewer(type = "qual",
-                    palette = 2,
+  scale_fill_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "darkorange", 
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
                     name = NULL, 
                     guide = "none") +
   scale_size_continuous(range = c(-1, 6), 
@@ -124,7 +125,7 @@ plot_final <- plot_1 +
 
 # save plot
 ggsave(plot_final, filename = here("figures",
-                               "figure_4.png"), 
+                               "fig_5.pdf"), 
        width = 183, height = 150,
        units = "mm", 
-       bg = "white", device = ragg::agg_png)  
+       bg = "white")  
