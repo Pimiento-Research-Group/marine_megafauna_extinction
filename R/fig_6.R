@@ -20,14 +20,7 @@ plot_1 <- dat_clean %>%
                names_to = "eco_trait", 
                values_to = "eco_val") %>% 
   drop_na(eco_val) %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal")),
-         eco_val = factor(eco_val,
+  mutate(eco_val = factor(eco_val,
                           levels = c("Herbivore", "Micropredator", "Macropredator", 
                                      "Benthic", "Benthopelagic", "Pelagic", 
                                      "Coastal", "Coastal/Oceanic", "Oceanic")), 
@@ -58,8 +51,14 @@ plot_1 <- dat_clean %>%
             expand = TRUE, 
             lwd = list(0.5)) +
   scale_x_reverse() +
-  scale_fill_brewer(type = "qual",
-                    palette = 2,
+  scale_fill_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "#FF8454", 
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
                     name = NULL) +
   scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
                      labels = c(1, 2, 5, 10, 20), 
@@ -71,13 +70,13 @@ plot_1 <- dat_clean %>%
        x = "Age [myr]") +
   facet_wrap(~eco_val) +
   theme_classic(base_size = 12) +
-  theme(legend.position = "top")
+  theme(legend.position = "none")
 
 
 # percentages -------------------------------------------------------------
 
 # visualise
-plot_2 <- dat_clean %>% 
+plot_2 <- dat_clean %>%
   pivot_longer(cols = c(vertical, habitat, guild), 
                names_to = "eco_trait", 
                values_to = "eco_val") %>% 
@@ -85,13 +84,6 @@ plot_2 <- dat_clean %>%
   count(eco_trait, eco_val, group) %>% 
   group_by(eco_trait) %>% 
   mutate(n_perc = (n/sum(n))*100, 
-         group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal")), 
          eco_trait = factor(eco_trait, 
                             levels = c("guild", 
                                        "vertical", 
@@ -100,8 +92,14 @@ plot_2 <- dat_clean %>%
              eco_val, 
              fill = group)) +
   geom_col(alpha = 0.9) +
-  scale_fill_brewer(type = "qual",
-                    palette = 2,
+  scale_fill_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "#FF8454", 
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
                     name = NULL) +
   scale_x_continuous(labels = function(x) paste0(x, "%")) +
   facet_wrap(~eco_trait, 
@@ -110,7 +108,8 @@ plot_2 <- dat_clean %>%
        x = NULL) +
   theme_classic(base_size = 12) +
   coord_flip() +
-  theme(legend.position = "none", 
+  theme(legend.position = "bottom", 
+        legend.key.size = unit(3, "mm"),
         strip.text = element_blank(), 
         strip.background = element_blank(), 
         axis.text.x = element_text(angle = 18,
@@ -129,8 +128,9 @@ plot_eco <- plot_2 /
   plot_annotation(tag_levels = "A") 
 
 # save plot
-ggsave(plot_eco, filename = here("figures",
-                                   "figure_eco.png"), 
+ggsave(plot_eco, 
+       filename = here("figures",
+                       "figure_6.pdf"), 
        width = 183, height = 180,
        units = "mm", 
-       bg = "white", device = ragg::agg_png) 
+       bg = "white") 
