@@ -2,7 +2,6 @@ library(here)
 library(tidyverse)
 library(patchwork)
 library(deeptime)
-library(ggridges)
 
 # read data ---------------------------------------------------------------
 
@@ -180,51 +179,39 @@ plot_4 <- dat_clean %>%
 # ranges per group --------------------------------------------------------
 
 plot_5 <- dat_clean %>%
-  mutate(group = fct_reorder(group, age_early_epoch)) %>% 
+  group_by(group) %>%
+  summarise(age_early_epoch = max(age_early_epoch), 
+            age_late_epoch = min(age_late_epoch)) %>% 
+  mutate(age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>% 
   ggplot(aes(y = group, 
-             fill = group)) +
+             colour = group)) +
   geom_vline(xintercept = c(443, 365, 252, 
                             210, 66), 
              colour = "grey70", 
              linetype = "dashed") +
-  geom_density_ridges(aes(x = age_late_epoch), 
-                      colour = "white", 
-                      alpha = 0.85) + 
-  annotate("label",
-           label.size = 0, 
-           label.padding = unit(0.1, "lines"),
-           x = c(150, 240, 240, 490, 505, 360, 160, 130), 
-           y = c(1.8, 2, seq(3.1, 8.1, by = 1)),
-           colour = c("#1e728eff", 
-                      "#6d3f2fff", 
-                      "darkorange", 
-                      "#5d7a64ff", 
-                      "#ffbc3cff", 
-                      "#ad6d8aff", 
-                      "#6d3f2fff", 
-                      "#f9938eff"),
-           label = c("Invertebrates", 
-                     "Placoderms", 
-                     "Jawless fishes", 
-                     "Chondrichthyans", 
-                     "Bony fishes", 
-                     "Non-avian reptiles", 
-                     "Birds", 
-                     "Mammals"), 
-           size = 8/.pt) +
-  labs(y = "Taxon distributions", 
+  geom_linerange(aes(xmin = age_early_epoch, 
+                     xmax = age_late_epoch)) +
+  geom_label(aes(x = age_mid, 
+                 label = group), 
+             position = position_nudge(y = c(0.6, rep(0, 3), 
+                                             0.6, rep(0, 3)), 
+                                       x = c(0, -260, 80, 80, 0, -180, -60, -60)),
+             label.size = 0, 
+             label.padding = unit(0.1, "lines"), 
+             size = 8/.pt) +
+  labs(y = "Group ranges", 
        x = "Age [myr]") +
-  scale_fill_manual(values = c("#f9938eff", 
-                               "#6d3f2fff",
-                               "#ad6d8aff",
-                               "#ffbc3cff",
-                               "#5d7a64ff",
-                               "darkorange",
-                               "coral3",
-                               "#1e728eff"),
-                     name = NULL) +
+  scale_colour_manual(values = c("#1e728eff",
+                                 "#ffbc3cff",
+                                 "darkorange", 
+                                 "coral3",
+                                 "#5d7a64ff",
+                                 "#ad6d8aff",
+                                 "#6d3f2fff",
+                                 "#f9938eff"),
+                      name = NULL) +
   scale_y_discrete(limits = rev, 
-                   expand = expansion(mult = c(0.05, 0.1))) +
+                   expand = expansion(mult = c(0.12, 0.16))) +
   scale_x_reverse(limits = c(520, 0)) + 
   theme_classic(base_size = 12) +
   guides(colour = guide_legend(nrow = 2,
