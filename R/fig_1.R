@@ -25,14 +25,7 @@ dat_hist <- dat_occ %>%
   group_by(group) %>%
   arrange(log_occ) %>% 
   distinct() %>% 
-  mutate(group = factor(group, 
-                        levels = c("Invert", 
-                                   "Fish", 
-                                   "Chondrichthyes", 
-                                   "Reptile", 
-                                   "Bird", 
-                                   "Mammal")), 
-         taxa = factor(taxa, levels = taxa)) 
+  mutate(taxa = factor(taxa, levels = taxa)) 
 
 
 plot_1 <- dat_hist %>%
@@ -40,13 +33,11 @@ plot_1 <- dat_hist %>%
   geom_bar(aes(fill = group), stat = "identity") +
   geom_text(aes(label = group, 
                 colour = group), 
-            position = position_nudge(y = c(12, -12, rep(12, 4)), 
-                                      x = c(-log(1.2), 
-                                            0,
-                                            rep(-log(1.2), 3),
-                                            -log(1.7))),
+            position = position_nudge(y = c(3, 6, 10, -20, -20, -20, 10, 10), 
+                                      x = c(log(1.7), log(1.6), rep(-log(1.7), 5),-log(2))),
             data = dat_hist %>%
-              filter(log_occ == max(log_occ))) +
+              filter(log_occ == max(log_occ)), 
+            size = 10/.pt) +
   labs(x = "# Occurrences", y = paste0("Taxa (n = ", 
                                        dat_occ %>%
                                          filter(occurrences > 0) %>%
@@ -57,11 +48,23 @@ plot_1 <- dat_hist %>%
                        log1p(1), log1p(300),
                        by = log1p(1)
                      )))) +
-  scale_fill_brewer(type = "qual",
-                      palette = 2,
-                      name = NULL) +
-  scale_colour_brewer(type = "qual",
-                      palette = 2,
+  scale_fill_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "darkorange", 
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
+                    name = NULL) +
+  scale_colour_manual(values = c("#1e728eff",
+                                 "#ffbc3cff",
+                                 "darkorange", 
+                                 "coral3",
+                                 "#5d7a64ff",
+                                 "#ad6d8aff",
+                                 "#6d3f2fff",
+                                 "#f9938eff"),
                       name = NULL) +
   guides(fill = guide_legend(nrow = 1)) +
   coord_cartesian(expand = FALSE) +
@@ -104,8 +107,9 @@ plot_final <- plot_1 /
   plot_annotation(tag_levels = "A")
 
 # and save
-ggsave(plot_final, filename = here("figures",
-                                   "figure_sampling.png"), 
+ggsave(plot_final,
+       filename = here("figures",
+                       "figure_1.pdf"), 
        width = 183, height = 150,
        units = "mm", 
-       bg = "white", device = ragg::agg_png)
+       bg = "white")
