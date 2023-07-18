@@ -1,2 +1,2 @@
 # marine_megafauna_extinction
-Repo for megafauna size data from the Pimiento course
+Analyses for: The extinct marine megafauna of the Phanerozoic
