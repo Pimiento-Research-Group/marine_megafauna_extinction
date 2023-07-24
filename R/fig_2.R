@@ -21,8 +21,7 @@ plot_1 <- dat_clean %>%
   mutate(taxa = fct_reorder(taxa, age_early_epoch)) %>% 
   ggplot(aes(y = taxa, 
              colour = group)) +
-  geom_vline(xintercept = c(443, 365, 252, 
-                            210, 66), 
+  geom_vline(xintercept = c(252, 66), 
              colour = "grey70", 
              linetype = "dashed") +
   geom_linerange(aes(xmin = age_early_epoch, 
@@ -185,16 +184,15 @@ plot_5 <- dat_clean %>%
   mutate(age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>% 
   ggplot(aes(y = group, 
              colour = group)) +
-  geom_vline(xintercept = c(443, 365, 252, 
-                            210, 66), 
+  geom_vline(xintercept = c(252, 66), 
              colour = "grey70", 
              linetype = "dashed") +
   geom_linerange(aes(xmin = age_early_epoch, 
                      xmax = age_late_epoch)) +
   geom_label(aes(x = age_mid, 
                  label = group), 
-             position = position_nudge(y = c(0.6, rep(0, 3), 
-                                             0.6, rep(0, 3)), 
+             position = position_nudge(y = c(0.7, rep(0, 3), 
+                                             0.7, rep(0, 3)), 
                                        x = c(0, -260, 80, 80, 0, -180, -60, -60)),
              label.size = 0, 
              label.padding = unit(0.1, "lines"), 
@@ -211,7 +209,7 @@ plot_5 <- dat_clean %>%
                                  "#f9938eff"),
                       name = NULL) +
   scale_y_discrete(limits = rev, 
-                   expand = expansion(mult = c(0.12, 0.16))) +
+                   expand = expansion(mult = c(1, 0.16))) +
   scale_x_reverse(limits = c(520, 0)) + 
   theme_classic(base_size = 12) +
   guides(colour = guide_legend(nrow = 2,
@@ -237,11 +235,11 @@ plot_5 <- dat_clean %>%
 
 plot_final <- (plot_4 /
                  plot_5 +
+                 inset_element(plot_2, 0.065, 0, 1, 0.3, 
+                               ignore_tag = TRUE)) /
   plot_1 +
-  inset_element(plot_2, 0.065, 0, 1, 0.3, 
-                ignore_tag = TRUE)) /
   plot_annotation(tag_levels = "A")  +
-  plot_layout(heights = c(1, 2, 2))
+  plot_layout(heights = c(1, 5, 2))
 
 
 # save plot
