@@ -58,7 +58,7 @@ dat_clean <- dat_raw %>%
                        names = c("genus", "species"),
                        cols_remove = FALSE, 
                        too_few = "align_start", 
-                       too_many = "merge")
+                       too_many = "drop")
 
 
   

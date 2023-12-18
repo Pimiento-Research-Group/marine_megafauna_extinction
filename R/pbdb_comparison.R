@@ -51,12 +51,12 @@ get_pbdb_url <- function(taxon){
 
 # get urls, adding "%20" instead of white space in the species names
 # resolves the API problem
-url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20"))
+url_list <- get_pbdb_url(str_replace(tax_names, " ", "%20")) %>% 
+  str_replace(" ", "")
 
-# download data on genus level
-pbdb_data_raw <- map(url_list, ~read_tsv(file = .x,
-                                     quote = "",
-                                     show_col_types = FALSE),
+
+pbdb_data_raw <- map(url_list, ~read_tsv(.x, 
+                                         show_col_types = FALSE),
                      .progress = TRUE)
 
 # save download
@@ -183,7 +183,7 @@ species_level / length(tax_names[str_count(tax_names, "\\S+")==2]) # approximate
 
 
 # make sure that datasets have same column types for merging 
-dat_pbdb <- pbdb_data %>% 
+dat_pbdb <- pbdb_data %>%
   map(~ .x %>% 
         mutate(family_no = as.numeric(family_no), 
                order_no = as.numeric(order_no), 
@@ -192,7 +192,22 @@ dat_pbdb <- pbdb_data %>%
                primary_reso = as.character(primary_reso), 
                subgenus_name = as.character(subgenus_name), 
                species_reso = as.character(species_reso), 
-               subgenus_reso = as.character(subgenus_reso))) %>% 
+               subgenus_reso = as.character(subgenus_reso), 
+               late_interval = as.character(late_interval), 
+               occurrence_no = as.character(occurrence_no), 
+               reid_no = as.character(reid_no), 
+               flags = as.character(flags), 
+               collection_no = as.character(collection_no),
+               identified_no = as.character(identified_no), 
+               accepted_no = as.character(accepted_no), 
+               max_ma = as.double(max_ma), 
+               min_ma = as.double(min_ma), 
+               reference_no = as.character(reference_no), 
+               phylum_no = as.character(phylum_no), 
+               genus_no = as.character(genus_no), 
+               subgenus_no = as.character(subgenus_no), 
+               lng = as.double(lng), 
+               lat = as.double(lat))) %>% 
   # create one dataframe from the list of pbdb occurrences
   bind_rows()
 
@@ -270,8 +285,9 @@ dat_occ %>%
 
 
 dat_occ %>% 
-  filter(occurrences > 0) %>% 
-  filter(group == "Jawless fishes")
+  filter(group == "Chondrichthyans", 
+         taxon == "Otodus megalodon") %>% 
+  summarise(sum(occurrences))
   
 
 # how many species have more than one occurrence
