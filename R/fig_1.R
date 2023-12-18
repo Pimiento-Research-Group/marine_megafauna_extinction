@@ -28,7 +28,8 @@ dat_hist <- dat_occ %>%
   mutate(taxa = factor(taxa, levels = taxa)) 
 
 
-plot_1 <- dat_hist %>%
+# plot_1 <- 
+dat_hist %>%
   ggplot(aes(y = taxa, x = log_occ)) +
   geom_bar(aes(fill = group), stat = "identity") +
   geom_text(aes(label = group, 

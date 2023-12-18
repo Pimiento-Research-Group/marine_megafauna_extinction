@@ -18,8 +18,10 @@ data("keys")
   
 
 # get tax names
-tax_names <- dat_clean %>% 
+tax_names <- dat_clean %>%
   distinct(taxa) %>% 
+  mutate(taxa = as.character(taxa)) %>% 
+  mutate(taxa = str_remove_all(taxa, " sp.")) %>% 
   pull(taxa)
 
 
@@ -239,11 +241,15 @@ nr_occ <- map_int(tax_names_clean$taxon_clean,
 dat_occ <- tibble(taxon = as_factor(tax_names_clean$taxon_clean),
                   occurrences = nr_occ, 
                   synonym = tax_names_clean$identified_name_clean) %>%
-  mutate(taxa = coalesce(synonym, taxon))%>%
+  mutate(taxa = coalesce(synonym, taxon)) %>%
   left_join(dat_clean %>%
-              select(taxa, group, clade, late_era),
+              select(taxa, group, clade, late_era) %>% 
+              mutate(taxa = str_remove_all(taxa, " sp.")),
             by = c("taxa")) %>%
   mutate(log_occ = log1p(occurrences))
+
+dat_occ %>% 
+  filter(taxa == "Pycnosteus")
 
 # save 
 write_rds(dat_occ, 
@@ -285,8 +291,7 @@ dat_occ %>%
 
 
 dat_occ %>% 
-  filter(group == "Chondrichthyans", 
-         taxon == "Otodus megalodon") %>% 
+  filter(group == "Chondrichthyans") %>% 
   summarise(sum(occurrences))
   
 

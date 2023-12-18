@@ -11,12 +11,19 @@ Proterovaginoceras incognitum,Dideroceras incognitum
 Pterygotus barrandei,Pterygotus barrandei
 Seirocrinus subangularis,Pentacrinus subangularis
 Pachyrhizodus subulidens,Raphiosaurus subulidens
+Scheenstia mantelli,Lepidotus mantelli
+Scheenstia mantelli,Lepidotes mantelli
+Scheenstia maximus,Lepidotes maximus
+Scheenstia laevis,Lepidotes laevis
 Saurichthys ornatus,Saurichthys ornatus
 Saurichthys dayi,Belonorhynchus dayi
 Saurichthys dayi,Saurichthys dayi
 Palaeorhynchus glarisianum,Palaeorhynchus glarisianus
 Anenchelum glarisianum,Lepidopus glarisianus
+Bananogmius,Ananogmius
 Saurichthys deperditus,Giffonus deperditus
+Cylindracanthus rectus,Coelorhynchus rectus
+Cylindracanthus acus,Coelorhynchus acus
 Pachycormus macropterus,Elops macropterus
 Sphyraenodus speciosus,Sphyraena speciosa
 Ceratodus tuberculatus,Neoceratodus tuberculatus
@@ -59,6 +66,7 @@ Otodus megalodon,Otodus megalodon
 Otodus obliquus,Lamna obliqua
 Parotodus benedeni,Isurus benedeni
 Planohybodus ensis,Hybodus ensis
+Ptychodus whipplei,Ptychodus whippleyi
 Squalicorax falcatus,Corax falcatus
 Squalicorax pristodontus,Corax pristodontus
 Striatolamia macrota,Carcharias macrota
@@ -67,6 +75,7 @@ Xampylodon dentatus,Notidanus dentatus
 Aigialosaurus bucchichi,Opetiosaurus bucchichi
 Allopleuron hoffmanni,Allopleuron hofmanni
 Anthropornis nordenskjoeldi,Anthropornis nordenskjoldii
+Anthropornis grandis,Pachypteryx grandis
 Archaeospheniscus wimani,Delphinornis wimani
 Aristonectes quiriquinensis,Aristonectes quiriquiensis
 Atlantochelys mortoni,Protostega neptunia
@@ -76,6 +85,8 @@ Callawayasaurus colombiensis,Alzadasaurus colombiensis
 Ceresiosaurus calcagnii,Lariosaurus calcagnii
 Cricosaurus suevicus,Geosaurus suevicus
 Cryptoclidus eurymerus,Cryptocleidus eurymerus
+Cryptoclidus,Plesiosaurus oxoniensis
+Cryptoclidus richardsoni,Cryptocleidus richardsoni
 Cyamodus hildegardis,Cyamodus hildegardensis
 Delphinornis larseni,Delphinornis larsenii
 Desmatochelys lowii,Desmatochelys lowi
@@ -90,7 +101,9 @@ Haasiasaurus gittelmani,Haasia gittelmani
 Tylosaurus bernardi,Hainosaurus bernardi
 Hauffiosaurus longirostris,Rhomaleosaurus longirostris
 Hauffiosaurus longirostris,Plesiosaurus longirostris
+Leptocleidus capensis,Plesiosaurus capensis
 Libonectes morgani,Elasmosaurus morgani
+Liopleurodon pachydeirus,Pliosaurus pachydeirus
 Liopleurodon ferox,Pliosaurus ferox
 Thalattosuchus superciliosus,Metriorhynchus superciliosum
 Thalattosuchus superciliosus,Metriorhynchus superciliosus
@@ -114,6 +127,10 @@ Platecarpus planifrons,Clidastes planifrons
 Platypterygius americanus,Myopterygius americanus
 Platypterygius platydactylus,Ichthyosaurus platydactylus
 Platysuchus multicrobiculatus,Mystriosaurus multicrobiculatus
+Plesiosaurus carinatus,Thaumatosaurus carinatus
+Pliosaurus,Cetiosaurus rigauxi
+Pliosaurus rossicus,Liopleurodon rossicus
+Pliosaurus brachydeirus,Pliosaurus brachydirus
 Plotosaurus bennisoni,Kolposaurus bennisoni
 Polycotylus latipinnis,Polycotylus latippinus
 Proganochelys quenstedtii,Proganochelys quenstedti
@@ -132,11 +149,13 @@ Macrospondylus bollensis,Steneosaurus bollensis
 Neosteneosaurus edwardsi,Steneosaurus edwardsi
 Styxosaurus snowii,Cimoliasaurus snowii
 Styxosaurus snowii,Elasmosaurus snowii
+Styxosaurus,Elasmosaurus marshii
 Taniwhasaurus antarcticus,Lakumasaurus antarcticus
 Torvoneustes carpenteri,Dakosaurus carpenteri
 Tylosaurus nepaeolicus,Liodon nepaeolicus
 Aglaocetus moreni,Cetotherium moreni
 Allodesmus sinanoensis,Eumetopias sinanoensis
+Atocetus nasalis,Pithanodelphis nasalis
 Marzanoptera bertae,Balaenoptera bertae
 Balaenoptera davidsonii,Eschrichtius davidsonii
 Balaenula balaenopsis,Balaena balaenopsis
