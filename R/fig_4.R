@@ -20,7 +20,7 @@ plot_1 <- dat_clean %>%
   count(group, log_max) %>% 
   ggplot(aes(log_max, n, 
              fill = group)) +
-  geom_col(width = 0.2) +
+  geom_col(width = 0.1) +
   labs(y = "Taxa count", 
        x = "Maximum body size [m]") +
   scale_fill_manual(values = c("#1e728eff",
@@ -205,7 +205,7 @@ plot_3 <- dat_clean %>%
              filter(p_star != "ns") %>%
              pull(p_star),
            x = c(30, -10, -10),
-           y = c(1.14, 1.44, 1.78),
+           y = c(1.04, 1.44, 1.78),
            colour = c("#1e728eff",
                       "#5d7a64ff",
                       "#ad6d8aff"),
