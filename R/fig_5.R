@@ -9,123 +9,153 @@ dat_clean <- read_rds(here("data",
                            "input",
                            "megafauna_clean.rds"))
 
+data(stages, package = "divDyn")
 
 
-# visualise ---------------------------------------------------------------
+
+# ecology per group -------------------------------------------------------
+
+plot_1 <- dat_clean %>%
+  count(group, vertical, habitat, guild) %>% 
+  mutate(across(c(vertical, habitat, guild),
+                as.character)) %>% 
+  replace_na(list(vertical = "Missing", 
+                  habitat = "Missing", 
+                  guild = "Missing")) %>% 
+  mutate(across(c(vertical, habitat, guild), 
+                ~ fct_relevel(.x, 
+                              "Missing", 
+                              after = 3)), 
+         guild = fct_relevel(guild, 
+                             "Micropredator", 
+                             after = 1)) %>% 
+  ggplot(aes(vertical, habitat, 
+             shape = guild, 
+             size = n, 
+             colour = group)) +
+  geom_point() +
+  scale_shape_manual(values = c(0, 1, 2, 4)) +
+  scale_size_continuous(range = c(1, 9), 
+                        breaks = c(1, 15, 30)) +
+  scale_color_manual(values = c("#1e728eff",
+                                "#ffbc3cff",
+                                "darkorange", 
+                                "coral3",
+                                "#5d7a64ff",
+                                "#ad6d8aff",
+                                "#6d3f2fff",
+                                "#f9938eff"),
+                     name = NULL) +
+  scale_y_discrete(expand = expansion(add = c(1, 1))) +
+  labs(x = NULL, 
+       y = NULL, 
+       size = NULL, 
+       shape = NULL) +
+  guides(colour = "none",
+         size = guide_legend(
+           override.aes = list(shape = 3))) +
+  facet_wrap(~ group, 
+             ncol = 4) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "bottom", 
+        legend.spacing.x = unit(1, 'mm'), 
+        axis.text.x = element_text(angle = 28,
+                                   vjust = 0.98,
+                                   hjust = 0.85), 
+        strip.background = element_rect(linewidth = 1), 
+        panel.grid.major = element_line(colour = "grey95"))
 
 
-dat_plot_1 <- dat_clean %>%
-  group_by(clade) %>% 
-  summarise(max_size = max(max_size_m)) %>% 
-  left_join(dat_clean %>% 
-              count(clade)) %>% 
-  left_join(dat_clean %>% 
-              distinct(group, clade)) %>% 
-  left_join(dat_clean %>% 
-              group_by(clade) %>% 
-              filter(max_size_m == max(max_size_m)) %>% 
-              ungroup() %>% 
-              select(clade, late_era) %>% 
-              distinct()) %>% 
-  mutate(clade = fct_reorder(clade, interaction(n, group), 
-                             .fun = sort))
 
-# visualise
-plot_1 <- dat_plot_1 %>%
-  ggplot(aes(n, clade)) +
-  geom_segment(aes(xend = 0,
-                   yend = clade),
-               colour = "grey70") +
-  geom_point(aes(size = max_size, 
-                 colour = group)) +
-  labs(y = NULL, 
-       x = "Taxon count", 
-       size = "Maximum size [m]", 
-       colour = NULL) +
-  scale_colour_manual(values = c("#1e728eff",
-                               "#ffbc3cff",
-                               "darkorange", 
-                               "coral3",
-                               "#5d7a64ff",
-                               "#ad6d8aff",
-                               "#6d3f2fff",
-                               "#f9938eff"),
-                      name = NULL) +
-  scale_size_continuous(breaks = c(1, 10, 20), 
-                        range = c(1, 6)) +
-  scale_y_discrete(expand = expansion(add = c(1, 1)), 
-                   limits = rev) +
-  guides(colour = guide_legend(override.aes = list(size = 3.5)), 
-         size = guide_legend(override.aes = list(shape = 21))) +
-  theme_classic(base_size = 12) 
-  
-  
+# and through time --------------------------------------------------------
 
-# occurrence per era ------------------------------------------------------
 
 plot_2 <- dat_clean %>%
-  group_by(early_era, clade) %>% 
-  summarise(max_size = max(max_size_m)) %>%
-  ungroup() %>% 
-  complete(clade, early_era, 
-           fill = list(max_size = 0)) %>% 
-  left_join(dat_clean %>% 
-              distinct(group, clade)) %>% 
-  mutate(clade = factor(clade, 
-                        levels = levels(dat_plot_1$clade), 
-                        ordered = TRUE), 
-         group = factor(group)) %>%
-  ggplot(aes(early_era, clade,
-             size = max_size, 
-             fill = group, 
+  count(early_era, vertical, habitat, guild) %>% 
+  mutate(across(c(vertical, habitat, guild),
+         as.character)) %>% 
+  replace_na(list(vertical = "Missing", 
+                  habitat = "Missing", 
+                  guild = "Missing")) %>% 
+  mutate(across(c(vertical, habitat, guild), 
+                ~ fct_relevel(.x, 
+                              "Missing", 
+                              after = 3)), 
+         guild = fct_relevel(guild, 
+                             "Micropredator", 
+                             after = 1)) %>% 
+  ggplot(aes(vertical, habitat, 
+             shape = guild, 
+             size = n, 
              colour = early_era)) +
-  geom_point(shape = 21, 
-             stroke = 1) +
-  labs(x = "Occurrence",
-       size = "Maximum size [m]",
-       colour = NULL, 
-       y = NULL) +
-  scale_x_discrete(labels = c("P", "M", "C")) +
-  scale_y_discrete(expand = expansion(add = c(1, 1)), 
-                   limits = rev) +
-  scale_colour_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9")), 
-                      labels = c("Paleozoic [P]", 
-                                 "Mesozoic [M]",
-                                 "Cenozoic [C]")) +
-  scale_fill_manual(values = c("#1e728eff",
-                               "#ffbc3cff",
-                               "darkorange", 
-                               "coral3",
-                               "#5d7a64ff",
-                               "#ad6d8aff",
-                               "#6d3f2fff",
-                               "#f9938eff"),
-                    name = NULL, 
-                    guide = "none") +
-  scale_size_continuous(range = c(-1, 6), 
-                        guide = "none") +
-  guides(colour = guide_legend(override.aes = list(size = 3.5))) +
+  geom_point() +
+  scale_shape_manual(values = c(0, 1, 2, 4)) +
+  scale_colour_manual(values = rev(c(colorspace::darken("#fcea10", 0.1),
+                                     "#5dc5ea", "#a9c6a9"))) +
+  labs(x = NULL, 
+       y = NULL, 
+       size = NULL, 
+       shape = NULL) +
+  guides(colour = "none") +
+  facet_wrap(~ early_era) +
   theme_minimal(base_size = 12) +
-  theme(panel.grid= element_blank(), 
-        axis.text.y = element_blank())
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 18,
+                                   vjust = 0.98,
+                                   hjust = 0.85), 
+        strip.background = element_rect(linewidth = 1), 
+        panel.grid.major = element_line(colour = "grey95"))
 
 
-# save --------------------------------------------------------------------
+
+# # per group through time --------------------------------------------------
+# 
+# dat_clean %>% 
+#   group_by(early_era, group) %>% 
+#   count(vertical) %>% 
+#   drop_na()  %>% 
+#   mutate(group = factor(group, 
+#                         levels = c("Invert", 
+#                                    "Fish", 
+#                                    "Chondrichthyes", 
+#                                    "Reptile", 
+#                                    "Bird", 
+#                                    "Mammal"))) %>% 
+#   ggplot(aes(vertical, n, 
+#              fill = group, 
+#              group = early_era)) +
+#   # geom_point() +
+#   # geom_line() +
+#   geom_point(position = position_dodge(width = 0.4), 
+#              shape = 21, 
+#              size = 3, 
+#              stroke = 1, 
+#              alpha = 0.8) +
+#   scale_fill_brewer(type = "qual",
+#                     palette = 2,
+#                     name = NULL) +
+#   scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+#   facet_wrap(~early_era) +
+#   theme_classic() 
+# 
+# 
+
+
+
+# save final plot ---------------------------------------------------------
 
 
 # patch together
-plot_final <- plot_1 +
-  plot_2 +
-  plot_layout(widths = c(6, 1), 
-              guides = "collect") +
-  plot_annotation(tag_levels = "A") 
-
-  
-  
+plot_final <- plot_1 / plot_2 +
+  plot_layout(heights = c(2, 1)) +
+  plot_annotation(tag_levels = "A")
 
 # save plot
-ggsave(plot_final, filename = here("figures",
-                               "figure_5.pdf"), 
-       width = 183, height = 150,
+ggsave(plot_final, 
+       filename = here("figures",
+                       "figure_4.pdf"), 
+       width = 183, height = 180,
        units = "mm", 
        bg = "white")  
+
+

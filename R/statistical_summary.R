@@ -36,3 +36,6 @@ dat_clean %>%
   count(taxonomic_rank) %>% 
   mutate(prop = (n/nrow(dat_clean))*100)
 
+dat_clean %>% 
+  count(taxonomic_rank) %>% 
+  mutate(prop = (n/nrow(dat_clean))*100)
