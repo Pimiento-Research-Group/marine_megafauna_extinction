@@ -28,21 +28,17 @@ dat_hist <- dat_occ %>%
   mutate(taxa = factor(taxa, levels = taxa)) 
 
 
-# plot_1 <- 
-dat_hist %>%
+plot_1 <- dat_hist %>%
   ggplot(aes(y = taxa, x = log_occ)) +
   geom_bar(aes(fill = group), stat = "identity") +
   geom_text(aes(label = group, 
                 colour = group), 
-            position = position_nudge(y = c(3, 6, 10, -20, -20, -20, 10, 10), 
-                                      x = c(log(1.7), log(1.6), rep(-log(1.7), 5),-log(2))),
+            position = position_nudge(y = c(6, 12, 14, 14, -20, -20, 14, 14), 
+                                      x = c(log(1.7), log(1.6), rep(-log(1.2), 5),-log(2))),
             data = dat_hist %>%
               filter(log_occ == max(log_occ)), 
             size = 10/.pt) +
-  labs(x = "# Occurrences", y = paste0("Taxa (n = ", 
-                                       dat_occ %>%
-                                         filter(occurrences > 0) %>%
-                                         nrow(), ")")) +
+  labs(x = "# Occurrences", y = NULL) +
   scale_x_continuous(breaks = c(0, seq(log1p(1), log1p(300),
                                        by = log1p(1))),
                      labels = c(0, expm1(seq(
@@ -110,7 +106,7 @@ plot_final <- plot_1 /
 # and save
 ggsave(plot_final,
        filename = here("figures",
-                       "figure_1.pdf"), 
+                       "figure_2.pdf"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white")
