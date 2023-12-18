@@ -39,3 +39,15 @@ dat_clean %>%
 dat_clean %>% 
   count(taxonomic_rank) %>% 
   mutate(prop = (n/nrow(dat_clean))*100)
+
+
+# over time ---------------------------------------------------------------
+
+dat_clean %>% 
+  count(early_era) %>% 
+  mutate(prop = (n/nrow(dat_clean))*100)
+
+
+dat_clean %>% 
+  count(early_period) %>% 
+  mutate(prop = (n/nrow(dat_clean))*100)

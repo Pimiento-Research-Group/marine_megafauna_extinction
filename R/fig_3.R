@@ -27,8 +27,8 @@ plot_1 <- dat_clean %>%
   geom_linerange(aes(xmin = age_early_epoch, 
                      xmax = age_late_epoch), 
                  position = position_dodge2(width = 1), 
-                 linewidth = 1, 
-                 alpha = 0.5) +
+                 linewidth = 0.22, 
+                 alpha = 1) +
   labs(y = "Taxon ranges", 
        x = "Age [myr]") +
   scale_color_manual(values = c("#1e728eff",
@@ -157,22 +157,40 @@ plot_3 <- dat_clean %>%
 # alternative for b -------------------------------------------------------
 
 plot_4 <- dat_clean %>%
-  ggplot(aes(group)) +
-  geom_bar(aes(fill = late_era), 
-           # position = position_dodge(), 
-           width = 0.8) +
-  scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
-  scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
-  labs(y = "Taxon count", 
-       x = NULL, 
-       fill = NULL) +
+  # add stage
+  left_join(stages %>% 
+              group_by(early_epoch = series) %>% 
+              summarise(early_stg = min(stg))) %>% 
+  left_join(stages %>% 
+              group_by(late_epoch = series) %>% 
+              summarise(late_stg = max(stg))) %>% 
+  mutate(stg_occ = map2(early_stg, 
+                        late_stg, 
+                        ~ seq(.x, .y))) %>% 
+  unnest(stg_occ) %>% 
+  count(group, stg_occ) %>% 
+  # add age
+  left_join(stages %>% 
+              select(stg_occ = stg, mid)) %>% 
+  ggplot(aes(mid, n, 
+             colour = group)) +
+  geom_line(linesize = 2)  +
+  scale_colour_manual(values = c("#1e728eff",
+                                 "#ffbc3cff",
+                                 "darkorange", 
+                                 "coral3",
+                                 "#5d7a64ff",
+                                 "#ad6d8aff",
+                                 "#6d3f2fff",
+                                 "#f9938eff"),
+                      name = NULL) +
+  labs(x = "Agy [myr]", 
+       y = "Taxon count") +
+  scale_x_reverse(limits = c(520, 0)) + 
   theme_classic(base_size = 12) +
-  theme(legend.position = "top", 
-        legend.key.size = unit(2, "mm"), 
-        axis.text.x = element_text(size = 10, 
-                                   angle = 15, 
-                                   hjust = 0.5,
-                                   vjust = 0.6))
+  theme(legend.position = "none")
+
+  
 
 
 # ranges per group --------------------------------------------------------
@@ -239,12 +257,12 @@ plot_final <- (plot_4 /
                                ignore_tag = TRUE)) /
   plot_1 +
   plot_annotation(tag_levels = "A")  +
-  plot_layout(heights = c(1, 5, 2))
+  plot_layout(heights = c(2, 5, 2))
 
 
 # save plot
 ggsave(plot_final, filename = here("figures",
-                                   "figure_2.pdf"), 
+                                   "figure_3.pdf"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white")     
