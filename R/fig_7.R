@@ -8,7 +8,24 @@ library(deeptime)
 # read cleaned data file
 dat_clean <- read_rds(here("data",
                            "input",
-                           "megafauna_clean.rds"))
+                           "megafauna_clean.rds")) %>% 
+  mutate(across(c(guild, 
+                  vertical, 
+                  habitat), 
+                ~ as.character(.x) %>% 
+                  str_to_sentence())) %>% 
+  mutate(guild = str_replace_all(guild, 
+                                 "Macropredators", 
+                                 "Macropredator"), 
+         guild = str_replace_all(guild, 
+                                 "Generalist", 
+                                 "Macropredator"),
+         vertical = str_replace_all(vertical,
+                                    "Deep-diver",
+                                    "Pelagic"), 
+         vertical = str_replace_all(vertical,
+                                    "Nearshore",
+                                    "Benthopelagic")) 
 
 
 
@@ -19,12 +36,13 @@ plot_1 <- dat_clean %>%
   pivot_longer(cols = c(vertical, habitat, guild), 
                names_to = "eco_trait", 
                values_to = "eco_val") %>% 
-  drop_na(eco_val) %>% 
-  mutate(eco_val = factor(eco_val,
-                          levels = c("Herbivore", "Micropredator", "Macropredator", 
-                                     "Benthic", "Benthopelagic", "Pelagic", 
-                                     "Coastal", "Coastal/Oceanic", "Oceanic")), 
-         age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>% 
+  mutate(
+    eco_val = factor(eco_val,
+                          levels = c("Herbivore", "Macropredator", "Micropredator",
+                                     "Benthic", "Benthopelagic", "Pelagic",
+                                     "Coastal", "Coastal/oceanic", "Oceanic")),
+         age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>%
+  drop_na(eco_val) %>%
   ggplot(aes(age_mid, log(max_size_m), 
              fill = group)) +
   geom_vline(xintercept = c(443, 365, 252, 
@@ -70,17 +88,20 @@ plot_1 <- dat_clean %>%
        x = "Age [myr]") +
   facet_wrap(~eco_val) +
   theme_classic(base_size = 12) +
-  theme(legend.position = "none")
+  theme(legend.position = "bottom",
+        legend.key.size = unit(3, "mm"))
 
 
 # percentages -------------------------------------------------------------
 
 # visualise
 plot_2 <- dat_clean %>%
+  replace_na(list(guild = "Missing", 
+                  vertical = "Missing", 
+                  habitat = "Missing")) %>% 
   pivot_longer(cols = c(vertical, habitat, guild), 
                names_to = "eco_trait", 
                values_to = "eco_val") %>% 
-  drop_na(eco_val) %>% 
   count(eco_trait, eco_val, group) %>% 
   group_by(eco_trait) %>% 
   mutate(n_perc = (n/sum(n))*100, 
@@ -88,6 +109,9 @@ plot_2 <- dat_clean %>%
                             levels = c("guild", 
                                        "vertical", 
                                        "habitat"))) %>% 
+  ungroup() %>% 
+  mutate(eco_val = fct_relevel(eco_val, "Missing", 
+                               after = Inf)) %>% 
   ggplot(aes(n_perc, 
              eco_val, 
              fill = group)) +
@@ -118,19 +142,62 @@ plot_2 <- dat_clean %>%
 
 
 
+# through time ------------------------------------------------------------
+
+
+plot_3 <- dat_clean %>%
+  count(early_era, vertical, habitat, guild) %>% 
+  mutate(across(c(vertical, habitat, guild),
+                as.character)) %>% 
+  drop_na(vertical, habitat, guild) %>% 
+  ggplot(aes(vertical, habitat, 
+             shape = guild, 
+             size = n, 
+             colour = early_era)) +
+  geom_point() +
+  scale_shape_manual(values = c(0, 1, 2, 4)) +
+  scale_colour_manual(values = rev(c(colorspace::darken("#fcea10", 0.1),
+                                     "#5dc5ea", "#a9c6a9"))) +
+  labs(x = NULL, 
+       y = NULL, 
+       size = NULL, 
+       shape = NULL) +
+  guides(colour = "none",
+         size = guide_legend(
+           override.aes = list(shape = 3))) +
+  scale_size_continuous(name = "#Occurrences", 
+                        range = c(1, 9), 
+                        breaks = c(1, 15, 30)) +
+  facet_wrap(~ early_era) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top", 
+        legend.title = element_text(size = 10), 
+        axis.text.x = element_text(angle = 18,
+                                   vjust = 0.98,
+                                   hjust = 0.85), 
+        strip.background = element_rect(linewidth = 1), 
+        panel.grid.major = element_line(colour = "grey95"))
 
 # save plots --------------------------------------------------------------
 
 # patch together
 plot_eco <- plot_2 / 
-  plot_1 +
-  plot_layout(heights = c(1, 6)) +
+  plot_3 +
+  plot_layout(heights = c(2,1)) +
   plot_annotation(tag_levels = "A") 
+
+# save plot
+ggsave(plot_1, 
+       filename = here("figures",
+                       "figure_7.pdf"), 
+       width = 183, height = 180,
+       units = "mm", 
+       bg = "white") 
 
 # save plot
 ggsave(plot_eco, 
        filename = here("figures",
-                       "figure_6.pdf"), 
+                       "figure_eco.pdf"), 
        width = 183, height = 180,
        units = "mm", 
        bg = "white") 
