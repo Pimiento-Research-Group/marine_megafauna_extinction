@@ -70,6 +70,24 @@ plot_1 <- dat_clean %>%
 
 # fads and lads over time -------------------------------------------------
 
+dat_clean %>%
+  mutate(early_epoch = factor(early_epoch, levels = stages %>% 
+                                distinct(series) %>% 
+                                pull)) %>% 
+  count(group, early_epoch, name = "nr_FAD") %>% 
+  mutate(FAD_prop = nr_FAD/sum(nr_FAD) * 100) %>% 
+  full_join(dat_clean %>% 
+              mutate(late_epoch = factor(late_epoch, levels = stages %>% 
+                                           distinct(series) %>% 
+                                           pull)) %>% 
+              count(group, late_epoch, name = "nr_LAD") %>% 
+              rename(early_epoch = late_epoch)) %>% 
+  drop_na() %>% 
+  mutate(LAD_prop = nr_LAD/sum(nr_LAD) * 100) %>% 
+  write_csv(here("data", 
+                 "output", 
+                 "fad_and_lad.csv"))
+
 plot_2 <- dat_clean %>%
   mutate(early_epoch = factor(early_epoch, levels = stages %>% 
                                 distinct(series) %>% 
@@ -88,7 +106,7 @@ plot_2 <- dat_clean %>%
   # add age
   left_join(stages %>% 
               group_by(epoch = series) %>% 
-              summarise(mid_age = mean(mid))) %>% 
+              summarise(mid_age = mean(mid))) %>%  
   pivot_longer(cols = c(LAD, FAD)) %>% 
   ggplot(aes(mid_age, value, 
              fill = name)) + 

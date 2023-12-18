@@ -1,0 +1,10 @@
+group,mean_trend,p_star,CI
+Overall,1.8%,***,"[1%, 2%]"
+Invertebrates,2.2%,**,"[1%, 4%]"
+Bony fishes,0.6%,ns,"[0%, 1%]"
+Jawless fishes,2.5%,ns,"[-44%, 52%]"
+Placoderms,8.4%,ns,"[-6%, 22%]"
+Chondrichthyans,2.8%,***,"[2%, 4%]"
+Non-avian reptiles,4.3%,***,"[3%, 6%]"
+Birds,-0.2%,ns,"[-12%, 12%]"
+Mammals,-9.6%,ns,"[-21%, 2%]"

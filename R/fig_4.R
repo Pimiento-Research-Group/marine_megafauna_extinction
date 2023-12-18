@@ -19,12 +19,11 @@ plot_1 <- dat_clean %>%
   mutate(log_max = log(max_size_m)) %>% 
   count(group, log_max) %>% 
   ggplot(aes(log_max, n, 
-             colour = group)) +
-  geom_line(linewidth = 0.7) +
-  geom_point(alpha = 0.3) +
+             fill = group)) +
+  geom_col(width = 0.2) +
   labs(y = "Taxa count", 
        x = "Maximum body size [m]") +
-  scale_color_manual(values = c("#1e728eff",
+  scale_fill_manual(values = c("#1e728eff",
                                 "#ffbc3cff",
                                 "darkorange", 
                                 "coral3",
@@ -36,13 +35,14 @@ plot_1 <- dat_clean %>%
   scale_x_continuous(breaks = log(c(1, 2, 5, 10, 20)), 
                      labels = c(1, 2, 5, 10, 20)) +
   theme_classic(base_size = 12) +
-  guides(colour = guide_legend(nrow = 2,
-                               byrow = TRUE, 
+  guides(fill = guide_legend(nrow = 2,
+                               byrow = TRUE,
                                override.aes = list(alpha = 1))) +
-  theme(legend.position = c(0.6, 0.8), 
-        legend.text = element_text(size = 9, 
+  theme(legend.position = c(0.6, 0.8),
+        legend.text = element_text(size = 9,
                                    colour = "grey10",
-                                   margin = margin(r = 0, unit = "pt")))
+                                   margin = margin(r = 0, unit = "pt")), 
+        legend.key.size = unit(2, "mm"))
 
 
 
@@ -80,11 +80,12 @@ dat_trend <- dat_clean %>%
                             between(p_value, 0.001, 0.01) ~ "**",
                             p_value < 0.001 ~ "***"))
 
-# overall trend p-value
-dat_clean %>%
+
+# overall trend 
+ov_trend <- dat_clean %>%
   mutate(age_mid = -((age_early_epoch - age_late_epoch)/2 + age_late_epoch), 
          log_max = log(max_size_m)) %>% 
-  lm(log_max ~ age_mid, .) %>% 
+  lm(log_max ~ age_mid, .)  
   # # overall trend
   # coefficients() %>%
   # pluck(2) %>% 
@@ -95,11 +96,49 @@ dat_clean %>%
   # .[2, ] %>% 
   # exp() %>% 
   # {(.-1)*100}
+# p-value
+ov_trend %>% 
   summary() %>%
   pluck(coefficients) %>% 
   .[2,4] 
   
-
+tibble(group = "Overall", 
+       mean_trend = ov_trend %>% 
+         coefficients() %>%
+         pluck(2) %>%
+         exp() %>%
+         {(.-1)*100}, 
+       lower_ci = ov_trend %>% 
+         confint() %>%
+         .[2, ] %>%
+         exp() %>%
+         {(.-1)*100} %>% 
+         .[1], 
+       upper_ci = ov_trend %>% 
+         confint() %>%
+         .[2, ] %>%
+         exp() %>%
+         {(.-1)*100} %>% 
+         .[2], 
+       p_value = ov_trend %>%
+         summary() %>%
+         pluck(coefficients) %>%
+         .[2, 4],
+       p_star = "***") %>% 
+  bind_rows(dat_trend) %>% 
+  mutate(across(c(mean_trend, 
+                  lower_ci, 
+                  upper_ci), ~round(.x *10, 1))) %>% 
+  mutate(mean_trend = paste0(round(mean_trend, 1), "%"), 
+         CI = paste0("[", 
+                     round(lower_ci, 0), 
+                     "%, ",
+                     round(upper_ci, 0), 
+                     "%]")) %>% 
+  select(group, mean_trend, p_star, CI) %>% 
+  write_csv(here("data", 
+                 "output", 
+                 "size_trend.csv"))
 
 
 # visualise it
@@ -139,18 +178,6 @@ plot_2 <- dat_clean %>%
                      labels = c(1, 2, 5, 10, 20)) +
   labs(y = "Maximum body size [m]", 
        x = "Age [myr]") +
-  # coord_geo(xlim = c(0, 510), 
-  #           dat = list("periods", "eras"),
-  #           pos = list("b", "b"),
-  #           alpha = 0.2, 
-  #           height = unit(0.8, "line"), 
-  #           size = list(7/.pt, 10/.pt),
-  #           lab_color = "grey20", 
-  #           color = "grey20", 
-  #           abbrv = list(TRUE, FALSE), 
-  #           fill = "white",
-  #           expand = TRUE, 
-  #           lwd = list(0.4, 0.5)) +
   scale_x_reverse() +
   theme_classic(base_size = 12) +
   theme(legend.position = "none") 
@@ -223,7 +250,7 @@ plot_first <- plot_1 /
 # save plot
 ggsave(plot_first, 
        filename = here("figures",
-                       "figure_3.pdf"), 
+                       "figure_4.pdf"), 
        width = 183, height = 180,
        units = "mm", 
        bg = "white")     
