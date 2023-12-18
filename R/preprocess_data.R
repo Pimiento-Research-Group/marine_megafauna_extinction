@@ -52,12 +52,13 @@ dat_clean <- dat_raw %>%
   filter(max_size_m >= 1) %>% # the students had reasons to include some <1m taxa; only 8 taxa where below 1m
   mutate(size_cat = cut(max_size_m, 
                         breaks = c(0, 5, 10, 15, 21),
-                        labels = c("<5m", "5-10m", "10-15m", ">15m"))) %>% 
+                        labels = c("<5m", "5-10m", "10-15m", ">15m"))) %>%
   separate_wider_delim(taxa,
                        delim = " ",
                        names = c("genus", "species"),
                        cols_remove = FALSE, 
-                       too_few = "align_start")
+                       too_few = "align_start", 
+                       too_many = "merge")
 
 
   
