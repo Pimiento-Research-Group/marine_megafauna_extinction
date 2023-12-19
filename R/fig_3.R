@@ -71,22 +71,22 @@ plot_1 <- dat_clean %>%
 # fads and lads over time -------------------------------------------------
 
 dat_clean %>%
-  mutate(early_epoch = factor(early_epoch, levels = stages %>% 
-                                distinct(series) %>% 
+  mutate(early_period = factor(early_period, levels = stages %>% 
+                                distinct(system) %>% 
                                 pull)) %>% 
-  count(group, early_epoch, name = "nr_FAD") %>% 
+  count(group, early_period, name = "nr_FAD") %>% 
   mutate(FAD_prop = nr_FAD/sum(nr_FAD) * 100) %>% 
   full_join(dat_clean %>% 
-              mutate(late_epoch = factor(late_epoch, levels = stages %>% 
-                                           distinct(series) %>% 
+              mutate(late_period = factor(late_period, levels = stages %>% 
+                                           distinct(system) %>% 
                                            pull)) %>% 
-              count(group, late_epoch, name = "nr_LAD") %>% 
-              rename(early_epoch = late_epoch)) %>% 
+              count(group, late_period, name = "nr_LAD") %>% 
+              rename(early_period = late_period)) %>% 
   drop_na() %>% 
   mutate(LAD_prop = nr_LAD/sum(nr_LAD) * 100) %>% 
-  write_csv(here("data", 
+  write_rds(here("data", 
                  "output", 
-                 "fad_and_lad.csv"))
+                 "fad_and_lad_per_system.rds"))
 
 plot_2 <- dat_clean %>%
   mutate(early_epoch = factor(early_epoch, levels = stages %>% 
@@ -314,3 +314,11 @@ ggsave(plot_final, filename = here("figures",
        width = 183, height = 150,
        units = "mm", 
        bg = "white")     
+
+
+# save plot
+ggsave(plot_sepkoski, filename = here("figures",
+                                   "figure_sepkoski.pdf"), 
+       width = 183, height = 100,
+       units = "mm", 
+       bg = "white")  

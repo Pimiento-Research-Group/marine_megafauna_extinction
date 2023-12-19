@@ -184,30 +184,30 @@ dat_comp %>%
   mutate(risk_diff = .epred_baseline - .epred_megafauna, 
          risk_diff_low = .lower_baseline - .lower_megafauna,
          risk_diff_high = .upper_baseline - .upper_megafauna,
-         .before = 2) 
+         .before = 2)
 
 
 # visualise
 plot_comp <- dat_comp %>%
-  ggplot(aes(group_id, .epred, 
-             colour = group)) +
+  ggplot(aes(group, .epred, 
+             colour = group, 
+             group = group_id)) +
   geom_linerange(aes(ymin = .lower, 
                       ymax = .upper), 
-                  position = position_dodge(width = 0.3), 
+                 position = position_dodge(width = 0.5), 
                  linewidth = 1, 
                  show.legend = FALSE, 
                  alpha = 0.7) +
   geom_point(aes(fill = group), 
              colour = "grey20", 
-             position = position_dodge(width = 0.3), 
+             position = position_dodge(width = 0.5), 
              shape = 21, 
              size = 3) +
   scale_y_continuous(name = "Extinction Risk [%]", 
                      breaks = seq(0, 1, by = 0.2), 
                      labels = seq(0, 1, by = 0.2)*100, 
                      limit = c(0, 1)) + 
-  scale_x_discrete(name = NULL, 
-                   labels = c("Baseline", "Megafauna")) +
+  labs(x = NULL) +
   guides(colour = guide_legend(nrow = 2, byrow = TRUE), 
          fill = guide_legend(nrow = 2, byrow = TRUE, 
                              override.aes = list(size = 3.5, 
@@ -229,8 +229,11 @@ plot_comp <- dat_comp %>%
                                "#f9938eff"),
                     name = NULL) +
   theme_classic(base_size = 12) +
-  theme(legend.position = c(0.5, 0.85), 
-        legend.key.size = unit(4, "mm"))
+  theme(legend.position = "none", 
+        legend.key.size = unit(4, "mm"), 
+        axis.text.x = element_text(angle = 15,
+                                   vjust = 0.88,
+                                   hjust = 0.7))
 
 
 # # save plot
@@ -302,6 +305,9 @@ plot_logit <- dat_logit %>%
   left_join(stages %>% 
               select(bin_occ = stg, age = mid)) %>% 
   ggplot(aes(age, logit)) +
+  geom_vline(xintercept = c(252, 66), 
+             colour = "grey70", 
+             linetype = "dashed") +
   geom_hline(yintercept = 0) +
   geom_line(aes(colour = group, 
                 group = paste(group, .draw)), 
@@ -422,7 +428,7 @@ plot_final <- plot_comp /
 # and save
 ggsave(plot_final, 
        filename = here("figures",
-                       "figure_7.pdf"), 
+                       "figure_8.pdf"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white")

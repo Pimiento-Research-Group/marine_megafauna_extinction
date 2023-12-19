@@ -150,7 +150,12 @@ plot_3 <- dat_clean %>%
   count(early_era, vertical, habitat, guild) %>% 
   mutate(across(c(vertical, habitat, guild),
                 as.character)) %>% 
-  drop_na(vertical, habitat, guild) %>% 
+  replace_na(list(guild = "Missing", 
+                  vertical = "Missing", 
+                  habitat = "Missing")) %>% 
+  mutate(across(c(vertical, habitat, guild), 
+                ~ fct_relevel(.x, "Missing",
+                              after = Inf))) %>% 
   ggplot(aes(vertical, habitat, 
              shape = guild, 
              size = n, 
@@ -164,18 +169,23 @@ plot_3 <- dat_clean %>%
        size = NULL, 
        shape = NULL) +
   guides(colour = "none",
-         size = guide_legend(
+         size = guide_legend(nrow = 1,
            override.aes = list(shape = 3))) +
-  scale_size_continuous(name = "#Occurrences", 
+  scale_size_continuous(name = "#Taxa", 
                         range = c(1, 9), 
                         breaks = c(1, 15, 30)) +
   facet_wrap(~ early_era) +
   theme_minimal(base_size = 12) +
   theme(legend.position = "top", 
+        legend.box="vertical", 
+        legend.margin = margin(),
         legend.title = element_text(size = 10), 
-        axis.text.x = element_text(angle = 18,
+        axis.text.x = element_text(angle = 35,
                                    vjust = 0.98,
                                    hjust = 0.85), 
+        axis.text.y = element_text(angle = 35,
+                                   vjust = 1,
+                                   hjust = 0.7),
         strip.background = element_rect(linewidth = 1), 
         panel.grid.major = element_line(colour = "grey95"))
 
@@ -183,24 +193,17 @@ plot_3 <- dat_clean %>%
 
 # patch together
 plot_eco <- plot_2/ 
-  plot_1 +
-  plot_layout(heights = c(1,5)) +
+  plot_1 / 
+  plot_3 +
+  plot_layout(heights = c(1,5, 1)) +
   plot_annotation(tag_levels = "A") 
 
 # save plot
 ggsave(plot_eco, 
        filename = here("figures",
                        "figure_7.pdf"), 
-       width = 183, height = 180,
+       width = 183, height = 180*2,
        units = "mm", 
        bg = "white") 
 
-
-# save plot
-ggsave(plot_3, 
-       filename = here("figures",
-                       "figure_eco.pdf"), 
-       width = 183, height = 100,
-       units = "mm", 
-       bg = "white") 
 

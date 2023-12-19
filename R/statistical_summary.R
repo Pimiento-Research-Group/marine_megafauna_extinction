@@ -51,3 +51,30 @@ dat_clean %>%
 dat_clean %>% 
   count(early_period) %>% 
   mutate(prop = (n/nrow(dat_clean))*100)
+
+
+
+# missing at random -------------------------------------------------------
+
+# Create a binary variable indicating missing data
+dat_mar <- dat_clean %>% 
+  select(guild, vertical, habitat) %>% 
+  mutate(across(everything(), as.character))
+  
+dat_mar$missing <- ifelse(rowSums(is.na(dat_mar)) > 0, 1, 0)
+
+# Perform logistic regression
+model <- glm(missing ~ guild + vertical + habitat, 
+             data = dat_mar,
+             family = "binomial")
+
+# calculate p-values
+coefficients <- summary(model)$coefficients[, "Estimate"]
+standard_errors <- summary(model)$coefficients[, "Std. Error"]
+z_values <- coefficients / standard_errors
+p_values <- 2 * (1 - pnorm(abs(z_values)))
+
+# Compare the p-values with the significance level (e.g., 0.05)
+significance_level <- 0.05
+is_mar <- all(p_values > significance_level)
+
