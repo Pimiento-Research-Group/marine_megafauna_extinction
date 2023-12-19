@@ -19,11 +19,12 @@ plot_1 <- dat_clean %>%
   mutate(log_max = log(max_size_m)) %>% 
   count(group, log_max) %>% 
   ggplot(aes(log_max, n, 
-             fill = group)) +
-  geom_col(width = 0.1) +
+             colour = group)) +
+  geom_line(linewidth = 0.7) +
+  geom_point(alpha = 0.3) +
   labs(y = "Taxa count", 
        x = "Maximum body size [m]") +
-  scale_fill_manual(values = c("#1e728eff",
+  scale_colour_manual(values = c("#1e728eff",
                                 "#ffbc3cff",
                                 "darkorange", 
                                 "coral3",
@@ -35,7 +36,7 @@ plot_1 <- dat_clean %>%
   scale_x_continuous(breaks = log(c(1, 2, 5, 10, 20)), 
                      labels = c(1, 2, 5, 10, 20)) +
   theme_classic(base_size = 12) +
-  guides(fill = guide_legend(nrow = 2,
+  guides(colour = guide_legend(nrow = 2,
                                byrow = TRUE,
                                override.aes = list(alpha = 1))) +
   theme(legend.position = c(0.6, 0.8),
@@ -148,8 +149,7 @@ plot_2 <- dat_clean %>%
   mutate(age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>% 
   ggplot(aes(x = age_mid, 
              y = log_max)) +
-  geom_vline(xintercept = c(443, 365, 252, 
-                            210, 66), 
+  geom_vline(xintercept = c(252, 66), 
              colour = "grey70", 
              linetype = "dashed") +
   stat_smooth(aes(group = 1),
@@ -165,6 +165,12 @@ plot_2 <- dat_clean %>%
              size = 2.5,
              shape = 21, 
              colour = "grey30") +
+  annotate("text",
+           x = 490,
+           y = 0.5,
+           label = "1.8% ***",
+           colour = "grey10",
+           size = 10/.pt) +
   scale_fill_manual(values = c("#1e728eff",
                                "#ffbc3cff",
                                "darkorange", 
@@ -190,8 +196,7 @@ plot_3 <- dat_clean %>%
   mutate(age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>%
   ggplot(aes(x = age_mid, 
              y = log_max)) +
-  geom_vline(xintercept = c(443, 365, 252, 
-                            210, 66), 
+  geom_vline(xintercept = c(252, 66), 
              colour = "grey70", 
              linetype = "dashed") +
   stat_smooth(aes(colour = group),
@@ -205,7 +210,20 @@ plot_3 <- dat_clean %>%
              filter(p_star != "ns") %>%
              pull(p_star),
            x = c(30, -10, -10),
-           y = c(1.04, 1.44, 1.78),
+           y = c(0.9, 1.55, 1.85),
+           colour = c("#1e728eff",
+                      "#5d7a64ff",
+                      "#ad6d8aff"),
+           size = 10/.pt) +
+  annotate("text",
+           label = dat_trend %>%
+             filter(p_star != "ns") %>%
+             pull(mean_trend) %>% 
+             {.*10} %>% 
+             round(1) %>% 
+             paste0(., "%"),
+           x = c(50, 20, 20),
+           y = c(0.9, 1.55, 1.85),
            colour = c("#1e728eff",
                       "#5d7a64ff",
                       "#ad6d8aff"),
