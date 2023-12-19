@@ -52,7 +52,8 @@ plot_1 <- dat_clean %>%
   geom_point(shape = 21, 
              colour = "grey30",
              alpha = 0.3, 
-             size = 3) +
+             size = 3, 
+             key_glyph = "rect") +
   coord_geo(xlim = c(0, 510), 
             dat = tibble(name = c("Cenozoic", "Mesozoic", "Paleozoic"), 
                          max_age = c(66, 251.9, 538.8), 
@@ -81,15 +82,15 @@ plot_1 <- dat_clean %>%
   scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
                      labels = c(1, 2, 5, 10, 20), 
                      limits = log(c(0.8, 30))) +
-  guides(fill = guide_legend(nrow = 1,
+  guides(fill = guide_legend(nrow = 2,
                              byrow = TRUE,
                              override.aes = list(alpha = 1))) +
   labs(y = "Maximum body size [m]", 
        x = "Age [myr]") +
   facet_wrap(~eco_val) +
   theme_classic(base_size = 12) +
-  theme(legend.position = "bottom",
-        legend.key.size = unit(3, "mm"))
+  theme(legend.position = "top",
+        legend.key.size = unit(1, "mm"))
 
 
 # percentages -------------------------------------------------------------
@@ -132,7 +133,7 @@ plot_2 <- dat_clean %>%
        x = NULL) +
   theme_classic(base_size = 12) +
   coord_flip() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "none", 
         legend.key.size = unit(3, "mm"),
         strip.text = element_blank(), 
         strip.background = element_blank(), 
@@ -181,23 +182,25 @@ plot_3 <- dat_clean %>%
 # save plots --------------------------------------------------------------
 
 # patch together
-plot_eco <- plot_2 / 
-  plot_3 +
-  plot_layout(heights = c(2,1)) +
+plot_eco <- plot_2/ 
+  plot_1 +
+  plot_layout(heights = c(1,5)) +
   plot_annotation(tag_levels = "A") 
 
 # save plot
-ggsave(plot_1, 
+ggsave(plot_eco, 
        filename = here("figures",
                        "figure_7.pdf"), 
        width = 183, height = 180,
        units = "mm", 
        bg = "white") 
 
+
 # save plot
-ggsave(plot_eco, 
+ggsave(plot_3, 
        filename = here("figures",
                        "figure_eco.pdf"), 
-       width = 183, height = 180,
+       width = 183, height = 100,
        units = "mm", 
        bg = "white") 
+

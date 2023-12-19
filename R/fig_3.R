@@ -136,45 +136,45 @@ plot_2 <- dat_clean %>%
 
 
 
-# taxa counts -------------------------------------------------------------
-
-
-# count taxa per group (and Era)
-plot_3 <- dat_clean %>%
-  count(group, late_era) %>% 
-  ggplot(aes(n, group)) +
-  geom_segment(aes(xend = 0,
-                   yend = group, 
-                   colour = group),
-               position = position_dodge2(width = 0.9), 
-               alpha = 0.5, 
-               linewidth = 0.4) +
-  geom_point(aes(colour = group, 
-                 fill = late_era), 
-             size = 5, 
-             shape = 21,
-             position = position_dodge(width = 0.9)) +
-  scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
-  scale_colour_brewer(type = "qual",
-                      palette = 2,
-                      name = NULL, 
-                      guide = "none") +
-  scale_y_discrete(expand = expansion(add = c(1, 1))) +
-  guides(fill = guide_legend(override.aes = list(size = 3, 
-                                                 stroke = 0))) +
-  labs(y = NULL, 
-       x = "Taxon count", 
-       fill = NULL) +
-  theme_classic(base_size = 12) +
-  theme(legend.position = "top", 
-        legend.text = element_text(size = 8, 
-                                   margin = margin(r = 0, unit = "pt")))
+# # taxa counts -------------------------------------------------------------
+# 
+# 
+# # count taxa per group (and Era)
+# plot_3 <- dat_clean %>%
+#   count(group, late_era) %>% 
+#   ggplot(aes(n, group)) +
+#   geom_segment(aes(xend = 0,
+#                    yend = group, 
+#                    colour = group),
+#                position = position_dodge2(width = 0.9), 
+#                alpha = 0.5, 
+#                linewidth = 0.4) +
+#   geom_point(aes(colour = group, 
+#                  fill = late_era), 
+#              size = 5, 
+#              shape = 21,
+#              position = position_dodge(width = 0.9)) +
+#   scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+#   scale_colour_brewer(type = "qual",
+#                       palette = 2,
+#                       name = NULL, 
+#                       guide = "none") +
+#   scale_y_discrete(expand = expansion(add = c(1, 1))) +
+#   guides(fill = guide_legend(override.aes = list(size = 3, 
+#                                                  stroke = 0))) +
+#   labs(y = NULL, 
+#        x = "Taxon count", 
+#        fill = NULL) +
+#   theme_classic(base_size = 12) +
+#   theme(legend.position = "top", 
+#         legend.text = element_text(size = 8, 
+#                                    margin = margin(r = 0, unit = "pt")))
 
 
 
 # alternative for b -------------------------------------------------------
 
-plot_4 <- dat_clean %>%
+plot_sepkoski <- dat_clean %>%
   # add stage
   left_join(stages %>% 
               group_by(early_epoch = series) %>% 
@@ -191,9 +191,21 @@ plot_4 <- dat_clean %>%
   left_join(stages %>% 
               select(stg_occ = stg, mid)) %>% 
   ggplot(aes(mid, n, 
+             fill = group, 
              colour = group)) +
-  geom_line(linesize = 2)  +
+  geom_ribbon(aes(ymin = 0, 
+                  ymax = n), 
+              alpha = 0.4)  +
   scale_colour_manual(values = c("#1e728eff",
+                                 "#ffbc3cff",
+                                 "darkorange", 
+                                 "coral3",
+                                 "#5d7a64ff",
+                                 "#ad6d8aff",
+                                 "#6d3f2fff",
+                                 "#f9938eff"),
+                      name = NULL) +
+  scale_fill_manual(values = c("#1e728eff",
                                  "#ffbc3cff",
                                  "darkorange", 
                                  "coral3",
@@ -210,7 +222,25 @@ plot_4 <- dat_clean %>%
 
   
 
-
+plot_4 <- dat_clean %>%
+  ggplot(aes(group)) +
+  geom_bar(aes(fill = late_era), 
+           # position = position_dodge(), 
+           width = 0.8) +
+  scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+  scale_fill_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
+  guides(fill = guide_legend(nrow = 1,
+                             byrow = TRUE)) +
+  labs(y = "Taxon count", 
+       x = NULL, 
+       fill = NULL) +
+  theme_classic(base_size = 12) +
+  theme(legend.position = c(0.28, 0.8), 
+        legend.key.size = unit(2, "mm"), 
+        axis.text.x = element_text(size = 10, 
+                                   angle = 15, 
+                                   hjust = 0.5,
+                                   vjust = 0.6))
 # ranges per group --------------------------------------------------------
 
 plot_5 <- dat_clean %>%
