@@ -181,9 +181,10 @@ plot_2 <- dat_clean %>%
                                "#f9938eff"),
                     name = NULL) +
   scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
-                     labels = c(1, 2, 5, 10, 20)) +
-  labs(y = "Maximum body size [m]", 
-       x = "Age [myr]") +
+                     labels = c(1, 2, 5, 10, 20),
+                     name = "Maximum body size [m]") +
+  scale_x_continuous(limits = c(510, 0), 
+                     name = "Age [myr]") +
   scale_x_reverse() +
   theme_classic(base_size = 12) +
   theme(legend.position = "none") 
@@ -239,8 +240,9 @@ plot_3 <- dat_clean %>%
                      name = NULL) +
   # scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
   #                    labels = c(1, 2, 5, 10, 20)) +
-  labs(y = "Maximum body size [m]", 
+  labs(y = "Mean maximum body size [m]", 
        x = "Age [myr]") +
+  scale_x_reverse() +
   coord_geo(xlim = c(0, 510), 
             dat = list("periods", "eras"),
             pos = list("b", "b"),
@@ -253,8 +255,8 @@ plot_3 <- dat_clean %>%
             fill = "white",
             expand = TRUE, 
             lwd = list(0.4, 0.5)) +
-  scale_x_reverse() +
   theme_classic(base_size = 12) +
+  coord_cartesian(xlim = c(505, 0)) +
   theme(legend.position = "none") 
 
 # patch together ----------------------------------------------------------
