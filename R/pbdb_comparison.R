@@ -291,7 +291,8 @@ dat_occ %>%
 
 
 dat_occ %>% 
-  filter(group == "Chondrichthyans") %>% 
+  filter(group == "Chondrichthyans", 
+         taxon == "Otodus megalodon") %>% 
   summarise(sum(occurrences))
   
 
