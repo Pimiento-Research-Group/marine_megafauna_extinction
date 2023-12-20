@@ -132,9 +132,9 @@ tibble(group = "Overall",
                   upper_ci), ~round(.x *10, 1))) %>% 
   mutate(mean_trend = paste0(round(mean_trend, 1), "%"), 
          CI = paste0("[", 
-                     round(lower_ci, 0), 
+                     round(lower_ci, 1), 
                      "%, ",
-                     round(upper_ci, 0), 
+                     round(upper_ci, 1), 
                      "%]")) %>% 
   select(group, mean_trend, p_star, CI) %>% 
   write_csv(here("data", 
