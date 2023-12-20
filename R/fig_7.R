@@ -45,8 +45,7 @@ plot_1 <- dat_clean %>%
   drop_na(eco_val) %>%
   ggplot(aes(age_mid, log(max_size_m), 
              fill = group)) +
-  geom_vline(xintercept = c(443, 365, 252, 
-                            210, 66), 
+  geom_vline(xintercept = c(252, 66), 
              colour = "grey70", 
              linetype = "dashed") +
   geom_point(shape = 21, 
@@ -194,15 +193,14 @@ plot_3 <- dat_clean %>%
 # patch together
 plot_eco <- plot_2/ 
   plot_1 / 
-  plot_3 +
-  plot_layout(heights = c(1,5, 1)) +
+  plot_layout(heights = c(1,5)) +
   plot_annotation(tag_levels = "A") 
 
 # save plot
 ggsave(plot_eco, 
        filename = here("figures",
                        "figure_7.pdf"), 
-       width = 183, height = 180*2,
+       width = 183, height = 180,
        units = "mm", 
        bg = "white") 
 

@@ -7,83 +7,43 @@ library(patchwork)
 # read cleaned data file
 dat_clean <- read_rds(here("data",
                            "input",
-                           "megafauna_clean.rds"))
+                           "megafauna_clean.rds")) %>% 
+  mutate(across(c(guild, 
+                  vertical, 
+                  habitat), 
+                ~ as.character(.x) %>% 
+                  str_to_sentence())) %>% 
+  mutate(guild = str_replace_all(guild, 
+                                 "Macropredators", 
+                                 "Macropredator"), 
+         guild = str_replace_all(guild, 
+                                 "Generalist", 
+                                 "Macropredator"),
+         vertical = str_replace_all(vertical,
+                                    "Deep-diver",
+                                    "Pelagic"), 
+         vertical = str_replace_all(vertical,
+                                    "Nearshore",
+                                    "Benthopelagic")) 
 
 data(stages, package = "divDyn")
 
 
 
-# ecology per group -------------------------------------------------------
 
-plot_1 <- dat_clean %>%
-  count(group, vertical, habitat, guild) %>% 
-  mutate(across(c(vertical, habitat, guild),
-                as.character)) %>% 
-  replace_na(list(vertical = "Missing", 
-                  habitat = "Missing", 
-                  guild = "Missing")) %>% 
-  mutate(across(c(vertical, habitat, guild), 
-                ~ fct_relevel(.x, 
-                              "Missing", 
-                              after = 3)), 
-         guild = fct_relevel(guild, 
-                             "Micropredator", 
-                             after = 1)) %>% 
-  ggplot(aes(vertical, habitat, 
-             shape = guild, 
-             size = n, 
-             colour = group)) +
-  geom_point() +
-  scale_shape_manual(values = c(0, 1, 2, 4)) +
-  scale_size_continuous(range = c(1, 9), 
-                        breaks = c(1, 15, 30)) +
-  scale_color_manual(values = c("#1e728eff",
-                                "#ffbc3cff",
-                                "darkorange", 
-                                "coral3",
-                                "#5d7a64ff",
-                                "#ad6d8aff",
-                                "#6d3f2fff",
-                                "#f9938eff"),
-                     name = NULL) +
-  scale_y_discrete(expand = expansion(add = c(1, 1))) +
-  labs(x = NULL, 
-       y = NULL, 
-       size = NULL, 
-       shape = NULL) +
-  guides(colour = "none",
-         size = guide_legend(
-           override.aes = list(shape = 3))) +
-  facet_wrap(~ group, 
-             ncol = 4) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "bottom", 
-        legend.spacing.x = unit(1, 'mm'), 
-        axis.text.x = element_text(angle = 28,
-                                   vjust = 0.98,
-                                   hjust = 0.85), 
-        strip.background = element_rect(linewidth = 1), 
-        panel.grid.major = element_line(colour = "grey95"))
+# visualise ---------------------------------------------------------------
 
 
-
-# and through time --------------------------------------------------------
-
-
-plot_2 <- dat_clean %>%
+plot_eco <- dat_clean %>%
   count(early_era, vertical, habitat, guild) %>% 
   mutate(across(c(vertical, habitat, guild),
-         as.character)) %>% 
-  replace_na(list(vertical = "Missing", 
-                  habitat = "Missing", 
-                  guild = "Missing")) %>% 
+                as.character)) %>% 
+  replace_na(list(guild = "Missing", 
+                  vertical = "Missing", 
+                  habitat = "Missing")) %>% 
   mutate(across(c(vertical, habitat, guild), 
-                ~ fct_relevel(.x, 
-                              "Missing", 
-                              after = 3)), 
-         guild = fct_relevel(guild, 
-                             "Micropredator", 
-                             after = 1)) %>% 
+                ~ fct_relevel(.x, "Missing",
+                              after = Inf))) %>% 
   ggplot(aes(vertical, habitat, 
              shape = guild, 
              size = n, 
@@ -96,66 +56,36 @@ plot_2 <- dat_clean %>%
        y = NULL, 
        size = NULL, 
        shape = NULL) +
-  guides(colour = "none") +
+  guides(colour = "none",
+         size = guide_legend(nrow = 1,
+                             override.aes = list(shape = 3))) +
+  scale_size_continuous(name = "#Taxa", 
+                        range = c(1, 9), 
+                        breaks = c(1, 15, 30)) +
   facet_wrap(~ early_era) +
   theme_minimal(base_size = 12) +
-  theme(legend.position = "none", 
-        axis.text.x = element_text(angle = 18,
+  theme(legend.position = "top", 
+        legend.box="vertical", 
+        legend.margin = margin(),
+        legend.title = element_text(size = 10), 
+        axis.text.x = element_text(angle = 35,
                                    vjust = 0.98,
                                    hjust = 0.85), 
+        axis.text.y = element_text(angle = 35,
+                                   vjust = 1,
+                                   hjust = 0.7),
         strip.background = element_rect(linewidth = 1), 
         panel.grid.major = element_line(colour = "grey95"))
 
+# save plots --------------------------------------------------------------
 
-
-# # per group through time --------------------------------------------------
-# 
-# dat_clean %>% 
-#   group_by(early_era, group) %>% 
-#   count(vertical) %>% 
-#   drop_na()  %>% 
-#   mutate(group = factor(group, 
-#                         levels = c("Invert", 
-#                                    "Fish", 
-#                                    "Chondrichthyes", 
-#                                    "Reptile", 
-#                                    "Bird", 
-#                                    "Mammal"))) %>% 
-#   ggplot(aes(vertical, n, 
-#              fill = group, 
-#              group = early_era)) +
-#   # geom_point() +
-#   # geom_line() +
-#   geom_point(position = position_dodge(width = 0.4), 
-#              shape = 21, 
-#              size = 3, 
-#              stroke = 1, 
-#              alpha = 0.8) +
-#   scale_fill_brewer(type = "qual",
-#                     palette = 2,
-#                     name = NULL) +
-#   scale_color_manual(values = rev(c("#fcea10","#5dc5ea", "#a9c6a9"))) +
-#   facet_wrap(~early_era) +
-#   theme_classic() 
-# 
-# 
-
-
-
-# save final plot ---------------------------------------------------------
-
-
-# patch together
-plot_final <- plot_1 / plot_2 +
-  plot_layout(heights = c(2, 1)) +
-  plot_annotation(tag_levels = "A")
 
 # save plot
-ggsave(plot_final, 
+ggsave(plot_eco, 
        filename = here("figures",
-                       "figure_4.pdf"), 
-       width = 183, height = 180,
+                       "figure_5.pdf"), 
+       width = 183, height = 90,
        units = "mm", 
-       bg = "white")  
+       bg = "white") 
 
 
