@@ -13,6 +13,7 @@ dat_clean <- read_rds(here("data",
 # missing data ------------------------------------------------------------
 
 dat_clean %>% 
+  group_by(group) %>% 
   summarise(across(c(guild, vertical, habitat), 
                    ~ (sum(is.na(.))/nrow(dat_clean))*100)) 
   
@@ -73,4 +74,20 @@ p_values <- 2 * (1 - pnorm(abs(z_values)))
 # Compare the p-values with the significance level (e.g., 0.05)
 significance_level <- 0.05
 is_mar <- all(p_values > significance_level)
+
+
+# ranges ------------------------------------------------------------------
+
+dat_clean %>% 
+  left_join(stages %>% 
+              group_by(series) %>% 
+              summarise(age_fad = mean(mid)) %>% 
+              rename(early_epoch = series)) %>% 
+  left_join(stages %>% 
+              group_by(series) %>% 
+              summarise(age_lad = mean(mid)) %>% 
+              rename(late_epoch = series)) %>% 
+  mutate(age_range = age_fad - age_lad) %>% 
+  # summarise(mean(age_range)) %>% 
+  arrange(desc(age_range)) 
 

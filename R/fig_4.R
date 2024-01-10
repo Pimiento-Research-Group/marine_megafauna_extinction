@@ -2,6 +2,7 @@ library(here)
 library(tidyverse)
 library(patchwork)
 library(deeptime)
+library(ggridges)
 
 # read data ---------------------------------------------------------------
 
@@ -14,36 +15,43 @@ data(stages, package = "divDyn")
 
 # overall distribution ----------------------------------------------------
 
+colour_vec <- c("darkorange",
+                "#6d3f2fff",
+                "#ffbc3cff", 
+                "#1e728eff",
+                "coral3",
+                "#5d7a64ff",
+                "#f9938eff",
+                "#ad6d8aff")
 
 plot_1 <- dat_clean %>%
-  mutate(log_max = log(max_size_m)) %>% 
-  count(group, log_max) %>% 
-  ggplot(aes(log_max, n, 
-             colour = group)) +
-  geom_line(linewidth = 0.7) +
-  geom_point(alpha = 0.3) +
-  labs(y = "Taxa count", 
-       x = "Maximum body size [m]") +
-  scale_colour_manual(values = c("#1e728eff",
-                                "#ffbc3cff",
-                                "darkorange", 
-                                "coral3",
-                                "#5d7a64ff",
-                                "#ad6d8aff",
-                                "#6d3f2fff",
-                                "#f9938eff"),
-                     name = NULL) +
+mutate(log_max = log(max_size_m), 
+       group = fct_reorder(group, log_max)) %>% 
+  ggplot(aes(x = log_max, 
+             y = group, 
+             fill = group, 
+             colour = group, 
+             height = ..density..)) + 
+  geom_density_ridges(stat = "density",
+                      bounds = c(0, Inf), 
+                      alpha = 0.6, 
+                      position = position_nudge(y = -0.3), 
+                      size = 0.8, 
+                      rel_min_height = 0.015) +
+  labs(y = NULL, 
+       x = "Maximum body size [m]", 
+       title = "A") +
+  scale_fill_manual(values = colour_vec,
+                    name = NULL) +
+  scale_colour_manual(values = colour_vec,
+                      name = NULL) +
   scale_x_continuous(breaks = log(c(1, 2, 5, 10, 20)), 
                      labels = c(1, 2, 5, 10, 20)) +
   theme_classic(base_size = 12) +
-  guides(colour = guide_legend(nrow = 2,
-                               byrow = TRUE,
-                               override.aes = list(alpha = 1))) +
-  theme(legend.position = c(0.6, 0.8),
-        legend.text = element_text(size = 9,
-                                   colour = "grey10",
-                                   margin = margin(r = 0, unit = "pt")), 
-        legend.key.size = unit(2, "mm"))
+  theme(legend.position = "none", 
+        axis.text.y = element_text(colour = colour_vec, 
+                                   face = "bold"), 
+        axis.ticks.y = element_blank())
 
 
 
@@ -159,18 +167,21 @@ plot_2 <- dat_clean %>%
               colour = "grey10",
               linewidth = 1) +
   geom_point(aes(fill = group), 
-             position = position_jitter(height = 0.1,
+             position = position_jitter(width = 10,
                                         seed = 123),
              alpha = 0.6,
              size = 2.5,
              shape = 21, 
              colour = "grey30") +
   annotate("text",
-           x = 490,
-           y = 0.5,
-           label = "1.8% ***",
+           x = 498,
+           y = 0.9,
+           label = "1.8%***",
            colour = "grey10",
            size = 10/.pt) +
+  labs(y = "Maximum body size [m]", 
+       x = "Age [myr]", 
+       title = "B") +
   scale_fill_manual(values = c("#1e728eff",
                                "#ffbc3cff",
                                "darkorange", 
@@ -181,10 +192,8 @@ plot_2 <- dat_clean %>%
                                "#f9938eff"),
                     name = NULL) +
   scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
-                     labels = c(1, 2, 5, 10, 20),
-                     name = "Maximum body size [m]") +
-  scale_x_continuous(limits = c(510, 0), 
-                     name = "Age [myr]") +
+                     labels = c(1, 2, 5, 10, 20)) +
+  coord_cartesian(xlim = c(510, 0)) +
   scale_x_reverse() +
   theme_classic(base_size = 12) +
   theme(legend.position = "none") 
@@ -210,12 +219,12 @@ plot_3 <- dat_clean %>%
            label = dat_trend %>%
              filter(p_star != "ns") %>%
              pull(p_star),
-           x = c(30, -10, -10),
-           y = c(0.9, 1.55, 1.85),
+           x = c(31, 3, 5),
+           y = c(1.1, 1.62, 1.9),
            colour = c("#1e728eff",
                       "#5d7a64ff",
                       "#ad6d8aff"),
-           size = 10/.pt) +
+           size = 8/.pt) +
   annotate("text",
            label = dat_trend %>%
              filter(p_star != "ns") %>%
@@ -223,12 +232,12 @@ plot_3 <- dat_clean %>%
              {.*10} %>% 
              round(1) %>% 
              paste0(., "%"),
-           x = c(50, 20, 20),
-           y = c(0.9, 1.55, 1.85),
+           x = c(48, 20, 22),
+           y = c(1.1, 1.62, 1.9),
            colour = c("#1e728eff",
                       "#5d7a64ff",
                       "#ad6d8aff"),
-           size = 10/.pt) +
+           size = 8/.pt) +
   scale_color_manual(values = c("#1e728eff",
                                 "#ffbc3cff",
                                 "#FF8454",
@@ -238,10 +247,11 @@ plot_3 <- dat_clean %>%
                                 "#6d3f2fff",
                                 "#f9938eff"),
                      name = NULL) +
-  # scale_y_continuous(breaks = log(c(1, 2, 5, 10, 20)),
-  #                    labels = c(1, 2, 5, 10, 20)) +
+  scale_y_continuous(breaks = c(0.2, 1, 1.8), 
+                     labels = c("  0", "  1", "  2")) +
   labs(y = "Mean maximum body size [m]", 
-       x = "Age [myr]") +
+       x = "Age [myr]", 
+       title = "C") +
   scale_x_reverse() +
   coord_geo(xlim = c(0, 510), 
             dat = list("periods", "eras"),
@@ -256,16 +266,14 @@ plot_3 <- dat_clean %>%
             expand = TRUE, 
             lwd = list(0.4, 0.5)) +
   theme_classic(base_size = 12) +
-  coord_cartesian(xlim = c(505, 0)) +
   theme(legend.position = "none") 
 
 # patch together ----------------------------------------------------------
 
-plot_first <- plot_1 /
-  plot_2 +
-  plot_3 +
-  plot_annotation(tag_levels = "A", 
-                  tag_suffix = "  ")
+plot_first <- wrap_elements(full = plot_1) +
+  wrap_elements(full = plot_2) + 
+  wrap_elements(full = plot_3) + 
+  plot_layout(ncol = 1) 
 
 # save plot
 ggsave(plot_first, 

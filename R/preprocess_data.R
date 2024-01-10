@@ -11,7 +11,7 @@ library(tidyverse)
 dat_raw <- 1:5 %>% 
   map(.f = ~ read_sheet("https://docs.google.com/spreadsheets/d/1YgEGDw0m5iaIJcpJufv7AZ0Rnw355Lxbeq4M4HHX7Z4/edit?usp=sharing",
                         sheet = .x)) %>% 
-  map(~ mutate(.x, Max_size_m = map(Max_size_m, as.integer)) %>% 
+  map(~ mutate(.x, Max_size_m = map(Max_size_m, as.double)) %>% 
         unnest(Max_size_m)) %>% 
   bind_rows()
 
