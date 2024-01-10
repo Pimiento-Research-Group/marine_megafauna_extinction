@@ -8,24 +8,7 @@ library(deeptime)
 # read cleaned data file
 dat_clean <- read_rds(here("data",
                            "input",
-                           "megafauna_clean.rds")) %>% 
-  mutate(across(c(guild, 
-                  vertical, 
-                  habitat), 
-                ~ as.character(.x) %>% 
-                  str_to_sentence())) %>% 
-  mutate(guild = str_replace_all(guild, 
-                                 "Macropredators", 
-                                 "Macropredator"), 
-         guild = str_replace_all(guild, 
-                                 "Generalist", 
-                                 "Macropredator"),
-         vertical = str_replace_all(vertical,
-                                    "Deep-diver",
-                                    "Pelagic"), 
-         vertical = str_replace_all(vertical,
-                                    "Nearshore",
-                                    "Benthopelagic")) 
+                           "megafauna_clean.rds")) 
 
 
 
@@ -38,9 +21,9 @@ plot_1 <- dat_clean %>%
                values_to = "eco_val") %>% 
   mutate(
     eco_val = factor(eco_val,
-                          levels = c("Herbivore", "Macropredator", "Micropredator",
+                          levels = c("Macropredator", "Micropredator", "Herbivore", 
                                      "Benthic", "Benthopelagic", "Pelagic",
-                                     "Coastal", "Coastal/oceanic", "Oceanic")),
+                                     "Coastal", "Coastal/Oceanic", "Oceanic")),
          age_mid = (age_early_epoch - age_late_epoch)/2 + age_late_epoch) %>%
   drop_na(eco_val) %>%
   ggplot(aes(age_mid, log(max_size_m), 
@@ -49,6 +32,8 @@ plot_1 <- dat_clean %>%
              colour = "grey70", 
              linetype = "dashed") +
   geom_point(shape = 21, 
+             position = position_jitter(width = 10, 
+                                        seed = 123),
              colour = "grey30",
              alpha = 0.3, 
              size = 3, 
@@ -95,23 +80,23 @@ plot_1 <- dat_clean %>%
 # percentages -------------------------------------------------------------
 
 # visualise
-plot_2 <- dat_clean %>%
-  replace_na(list(guild = "Missing", 
-                  vertical = "Missing", 
-                  habitat = "Missing")) %>% 
-  pivot_longer(cols = c(vertical, habitat, guild), 
-               names_to = "eco_trait", 
+plot_2 <- dat_clean  %>%
+  pivot_longer(cols = c(vertical, habitat, guild),
+               names_to = "eco_trait",
                values_to = "eco_val") %>% 
+  drop_na(eco_val) %>% 
   count(eco_trait, eco_val, group) %>% 
   group_by(eco_trait) %>% 
   mutate(n_perc = (n/sum(n))*100, 
          eco_trait = factor(eco_trait, 
                             levels = c("guild", 
                                        "vertical", 
-                                       "habitat"))) %>% 
+                                       "habitat")),
+         eco_val = factor(eco_val,
+                          levels = c("Macropredator", "Micropredator", "Herbivore",
+                                     "Benthic", "Benthopelagic", "Pelagic",
+                                     "Coastal", "Coastal / Oceanic", "Oceanic"))) %>% 
   ungroup() %>% 
-  mutate(eco_val = fct_relevel(eco_val, "Missing", 
-                               after = Inf)) %>% 
   ggplot(aes(n_perc, 
              eco_val, 
              fill = group)) +
