@@ -81,7 +81,7 @@ plot_2 <- dat_clean %>%
              colour = early_era)) +
   geom_point(shape = 21, 
              stroke = 1) +
-  labs(x = "Occurrence",
+  labs(x = "Presence",
        size = "Maximum size [m]",
        colour = NULL, 
        y = NULL) +
@@ -125,7 +125,7 @@ plot_final <- plot_1 +
 
 # save plot
 ggsave(plot_final, filename = here("figures",
-                               "figure_6.pdf"), 
+                               "figure_6.svg"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white")  
