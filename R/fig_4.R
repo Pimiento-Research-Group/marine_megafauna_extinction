@@ -37,7 +37,7 @@ mutate(log_max = log(max_size_m),
                       alpha = 0.6, 
                       position = position_nudge(y = -0.3), 
                       size = 0.8, 
-                      rel_min_height = 0.015) +
+                      rel_min_height = 0.01) +
   labs(y = NULL, 
        x = "Maximum body size [m]", 
        title = "A") +
