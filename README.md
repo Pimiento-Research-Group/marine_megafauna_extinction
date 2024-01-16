@@ -21,6 +21,7 @@
 **R/pbdb_comparison.R** - Script to download PBDB occurrences and to quantify coverage of the megafauna in the PBDB  
 **R/preprocess_data.R** - Script to download the megafauna database and to clean it in order to create *input/megafauna_clean.rds*  
 **R/sampling_through_time.R** - Script to create a gif of sampling sites over time  
+**R/statistical_summary.R** - Script to get basic statistical values for the database that are reported in the manuscript
   
   
 
