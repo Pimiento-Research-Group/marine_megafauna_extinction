@@ -16,6 +16,11 @@ dat_crm <- read_rds(here("data",
                          "output",
                          "cmr_data.rds"))
  
+# cleaned pbdb data
+dat_pbdb <- read_rds(here("data",
+                          "output",
+                          "pbdb_data_clean.rds"))
+                     
 # occurrences ---------------------------------------------------------------
 
 
@@ -94,11 +99,54 @@ plot_2 <- dat_crm %>%
 
 
 
+# pbdb representation -----------------------------------------------------
+
+plot_pbdb <- dat_pbdb %>%
+  mutate(is_pres = if_else(occurrences == 0, "abs", "pres")) %>% 
+  group_by(group) %>% 
+  count(is_pres) %>% 
+  pivot_wider(names_from = is_pres, 
+              values_from = n) %>% 
+  replace_na(list(abs = 0)) %>% 
+  mutate(pres_perc = (pres/(abs + pres))*100) %>% 
+  ggplot(aes(group, pres_perc, 
+             fill = group)) +
+  geom_col(alpha = 0.8) +
+  theme_classic(base_size = 12) +
+  labs(y = NULL, 
+       x = NULL) +
+  annotate("text", 
+           label = "Representation in PBDB", 
+           x = 6, 
+           y = 92, 
+           size = 11/.pt) +
+  scale_y_continuous(breaks = c(0, 50, 100), 
+                     labels = function(x) paste0(x, "%"), 
+                     expand = expansion(add = 1)) +
+  scale_x_discrete(limits = rev) +
+  scale_fill_manual(values = c("#1e728eff",
+                               "#ffbc3cff",
+                               "darkorange",
+                               "coral3",
+                               "#5d7a64ff",
+                               "#ad6d8aff",
+                               "#6d3f2fff",
+                               "#f9938eff"),
+                      name = NULL) +
+  theme(panel.grid = element_blank(), 
+        legend.position = "none", 
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        plot.title = element_text(hjust = 1, 
+                                  size = 12))
+
+
 # patch together ----------------------------------------------------------
 
 
 # patch together
-plot_final <- plot_1 /
+plot_final <- (plot_1 +
+  inset_element(plot_pbdb, 0.4, 0.35, 1, 0.71)) /
   plot_2 +
   plot_layout(heights = c(3, 1)) +
   plot_annotation(tag_levels = "A")
