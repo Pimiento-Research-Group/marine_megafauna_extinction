@@ -95,7 +95,7 @@ plot_2 <- dat_clean  %>%
          eco_val = factor(eco_val,
                           levels = c("Macropredator", "Micropredator", "Herbivore",
                                      "Benthic", "Benthopelagic", "Pelagic",
-                                     "Coastal", "Coastal / Oceanic", "Oceanic"))) %>% 
+                                     "Coastal", "Coastal/Oceanic", "Oceanic"))) %>% 
   ungroup() %>% 
   ggplot(aes(n_perc, 
              eco_val, 
