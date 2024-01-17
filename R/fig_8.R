@@ -75,6 +75,13 @@ pbdb_data_raw <- map(url_list, ~read_tsv(file = .x,
                                          show_col_types = FALSE), 
                      .progress = TRUE)
 
+# save the raw download
+pbdb_data_raw %>% 
+  write_rds(here("data", 
+                 "output", 
+                 "pbdb_data_size.rds"), 
+            compress = "gz")
+
 # remove those where no entries where found, based on length of returned entries
 pbdb_data <- pbdb_data_raw[map(pbdb_data_raw, ncol) > 2] %>% 
   # same for where we get a message for no found entries
@@ -88,12 +95,7 @@ pbdb_data <- pbdb_data_raw[map(pbdb_data_raw, ncol) > 2] %>%
   # combine lists into one dataframe
   bind_rows()
 
-# save the raw download
-pbdb_data_raw %>% 
-  write_rds(here("data", 
-                 "output", 
-                 "pbdb_data_size.rds"), 
-            compress = "gz")
+
 
 # bin to stages -----------------------------------------------------------
 
@@ -203,6 +205,20 @@ plot_comp <- dat_comp %>%
              position = position_dodge(width = 0.5), 
              shape = 21, 
              size = 3) +
+  annotate("text", 
+           x = 0.7, 
+           y = 0.338, 
+           label = "Baseline", 
+           size = 10/.pt, 
+           colour = "grey40", 
+           angle = 90) +
+  annotate("text", 
+           x = 1.3, 
+           y = 0.315, 
+           label = "Megafauna", 
+           size = 10/.pt, 
+           colour = "grey40", 
+           angle = 270) +
   scale_y_continuous(name = "Extinction Risk [%]", 
                      breaks = seq(0, 1, by = 0.2), 
                      labels = seq(0, 1, by = 0.2)*100, 
