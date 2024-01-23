@@ -92,6 +92,5 @@ dat_clean %>%
   mutate(age_range = age_fad - age_lad) %>% 
   # summarise(mean(age_range)) %>%
   arrange(desc(age_range)) %>% 
-  head() %>% 
-  View
-
+  slice_head(n = 35) %>% 
+  count(group)
