@@ -9,6 +9,8 @@ dat_clean <- read_rds(here("data",
                            "input",
                            "megafauna_clean.rds"))
 
+# stage data
+data(stages, package = "divDyn")
 
 # missing data ------------------------------------------------------------
 
@@ -88,6 +90,8 @@ dat_clean %>%
               summarise(age_lad = mean(mid)) %>% 
               rename(late_epoch = series)) %>% 
   mutate(age_range = age_fad - age_lad) %>% 
-  # summarise(mean(age_range)) %>% 
-  arrange(desc(age_range)) 
+  # summarise(mean(age_range)) %>%
+  arrange(desc(age_range)) %>% 
+  head() %>% 
+  View
 

@@ -310,7 +310,7 @@ plot_final <- (plot_4 /
 
 # save plot
 ggsave(plot_final, filename = here("figures",
-                                   "figure_3.pdf"), 
+                                   "figure_3.svg"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white")     
@@ -319,6 +319,6 @@ ggsave(plot_final, filename = here("figures",
 # save plot
 ggsave(plot_sepkoski, filename = here("figures",
                                    "figure_sepkoski.pdf"), 
-       width = 183, height = 100,
+       width = 183, height = 150,
        units = "mm", 
        bg = "white")  

@@ -278,7 +278,7 @@ plot_first <- wrap_elements(full = plot_1) +
 # save plot
 ggsave(plot_first, 
        filename = here("figures",
-                       "figure_4.pdf"), 
+                       "figure_4.svg"), 
        width = 183, height = 180,
        units = "mm", 
        bg = "white")     
