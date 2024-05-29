@@ -125,7 +125,7 @@ plot_final <- plot_1 +
 
 # save plot
 ggsave(plot_final, filename = here("figures",
-                               "figure_6.svg"), 
+                               "figure_6.png"), 
        width = 183, height = 150,
        units = "mm", 
        bg = "white")  
